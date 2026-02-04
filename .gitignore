@@ -1,0 +1,6 @@
+# OS + Editor metadata
+.DS_Store
+.vscode/
+*.swp
+*.swo
+*~
