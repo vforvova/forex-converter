@@ -1,7 +1,7 @@
 package com.forexconverter.config;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -13,7 +13,7 @@ public class SwopClientProperties {
 
   @NotBlank private String apiKey;
 
-  @Positive private int timeoutMs = 1000;
+  private Duration timeout = Duration.ofMillis(1000);
 
   public String baseUrl() {
     return baseUrl;
@@ -31,11 +31,11 @@ public class SwopClientProperties {
     this.apiKey = apiKey;
   }
 
-  public int timeoutMs() {
-    return timeoutMs;
+  public Duration timeout() {
+    return timeout;
   }
 
-  public void setTimeoutMs(int timeoutMs) {
-    this.timeoutMs = timeoutMs;
+  public void setTimeout(Duration timeout) {
+    this.timeout = timeout;
   }
 }

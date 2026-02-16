@@ -1,7 +1,7 @@
 swop:
   base-url: https://swop.cx
   api-key: ${SWOP_API_KEY}
-  timeout-ms: 1000
+  timeout: 1000ms
 
 management:
   endpoints:
