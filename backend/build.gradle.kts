@@ -33,10 +33,6 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 spotless {
     java {
         googleJavaFormat()
@@ -45,6 +41,34 @@ spotless {
 
 jacoco {
     toolVersion = "0.8.11"
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+
+    testLogging {
+        events("skipped", "failed")
+        showExceptions = true
+        showStackTraces = true
+        showCauses = true
+
+        info {
+            events()
+            showStandardStreams = false
+        }
+    }
+
+    if (project.hasProperty("unit")) {
+        useJUnitPlatform {
+            includeTags("unit")
+        }
+    }
+
+    if (project.hasProperty("integration")) {
+        useJUnitPlatform {
+            includeTags("integration")
+        }
+    }
 }
 
 tasks.named<JacocoReport>("jacocoTestReport") {
