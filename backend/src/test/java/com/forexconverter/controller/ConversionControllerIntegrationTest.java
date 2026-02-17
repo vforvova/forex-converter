@@ -2,70 +2,112 @@ package com.forexconverter.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.stream.Stream;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = "swop.api-key=test-api-key")
 @Tag("integration")
 class ConversionControllerIntegrationTest {
 
   @LocalServerPort private int port;
 
   private final HttpClient client = HttpClient.newHttpClient();
+  private static MockWebServer mockServer;
+  private static String mockServerUrl;
+
+  @BeforeAll
+  static void setUpAll() throws IOException {
+    mockServer = new MockWebServer();
+    mockServer.start(8089);
+    mockServerUrl = mockServer.url("/").toString();
+  }
+
+  @AfterAll
+  static void tearDownAll() throws IOException {
+    mockServer.shutdown();
+  }
+
+  @DynamicPropertySource
+  static void setProperties(DynamicPropertyRegistry registry) {
+    registry.add("swop.base-url", () -> mockServerUrl);
+  }
 
   private String url(String path) {
     return "http://localhost:" + port + path;
   }
 
-  @DisplayName("Should successfully convert USD to EUR with specified amount")
-  @Test
-  void shouldConvertCurrencies() throws Exception {
-    HttpRequest request =
-        HttpRequest.newBuilder().uri(URI.create(url("/convert/USD-EUR?amount=100"))).GET().build();
-    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+  // -- Error scenarios --
 
-    assertThat(response.statusCode()).isEqualTo(200);
-    assertThat(response.body()).contains("\"result\":92.5");
+  private static Stream<Arguments> errorScenarios() {
+    return Stream.of(
+        Arguments.of("/convert/USD-USD?amount=100", 400),
+        Arguments.of("/convert/USD-EUR?amount=-100", 400),
+        Arguments.of("/convert/USD-EUR?amount=abc", 400),
+        Arguments.of("/convert/USD-XXX?amount=100", 404),
+        Arguments.of("/convert/XXX-EUR?amount=100", 404));
   }
 
-  @DisplayName("Should handle various conversion scenarios including validation and error cases")
+  @DisplayName("Should respond with errors")
   @ParameterizedTest
-  @CsvSource({
-    "/convert/USD-EUR?amount=100, 200, 92.5",
-    "/convert/USD-EUR, 200, 0.925",
-    "/convert/XXX-EUR?amount=100, 404, null",
-    "/convert/USD-XXX?amount=100, 404, null",
-    "/convert/USD-EUR?amount=-100, 400, null"
-  })
-  void shouldHandleAllScenarios(String url, int expectedStatus, String expectedResult)
-      throws Exception {
-    HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url(url))).GET().build();
+  @MethodSource("errorScenarios")
+  void shouldRespondWithErrors(String urlPath, int expectedStatus) throws Exception {
+    HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url(urlPath))).GET().build();
     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(response.statusCode()).isEqualTo(expectedStatus);
-    if (expectedResult != null && !expectedResult.equals("null")) {
-      assertThat(response.body()).contains("\"result\":" + expectedResult);
-    }
   }
 
-  @DisplayName("Should return 400 when converting same currency")
-  @Test
-  void shouldReturn400ForSameCurrency() throws Exception {
-    HttpRequest request =
-        HttpRequest.newBuilder().uri(URI.create(url("/convert/USD-USD?amount=100"))).GET().build();
+  // -- Success scenarios --
+
+  private static Stream<Arguments> successScenarios() {
+    return Stream.of(
+        Arguments.of("/convert/EUR-USD?amount=100", "EUR", "USD", "1.079301", "107.9301"),
+        Arguments.of("/convert/USD-GBP?amount=50", "USD", "GBP", "0.789123", "39.45615"));
+  }
+
+  @DisplayName("Should return 200 for successful conversions")
+  @ParameterizedTest
+  @MethodSource("successScenarios")
+  void shouldConvertCurrencies(String urlPath, String from, String to, String rate, String expectedResult)
+      throws Exception {
+    mockServer.enqueue(
+        new MockResponse()
+            .setBody(
+                String.format(
+                    """
+                    {
+                        "base_currency": "%s",
+                        "quote_currency": "%s",
+                        "quote": %s,
+                        "date": "2026-02-15"
+                    }
+                    """,
+                    from, to, rate))
+            .addHeader("Content-Type", "application/json"));
+
+    HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url(urlPath))).GET().build();
     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-    assertThat(response.statusCode()).isEqualTo(400);
-    assertThat(response.body()).contains("\"error\"");
-    assertThat(response.body()).contains("Source and target currency cannot be the same");
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).contains("\"result\":" + expectedResult);
   }
 }
