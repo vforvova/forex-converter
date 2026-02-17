@@ -87,8 +87,8 @@ class ConversionControllerIntegrationTest {
   @DisplayName("Should return 200 for successful conversions")
   @ParameterizedTest
   @MethodSource("successScenarios")
-  void shouldConvertCurrencies(String urlPath, String from, String to, String rate, String expectedResult)
-      throws Exception {
+  void shouldConvertCurrencies(
+      String urlPath, String from, String to, String rate, String expectedResult) throws Exception {
     mockServer.enqueue(
         new MockResponse()
             .setBody(
