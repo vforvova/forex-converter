@@ -22,6 +22,8 @@ repositories {
 }
 
 dependencies {
+    developmentOnly("me.paulschwarz:springboot4-dotenv:5.1.0")
+
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-validation")
