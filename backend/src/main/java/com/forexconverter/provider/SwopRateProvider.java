@@ -2,12 +2,15 @@ package com.forexconverter.provider;
 
 import com.forexconverter.Currency;
 import com.forexconverter.client.SwopClient;
+import com.forexconverter.config.CacheConfig;
 import com.forexconverter.dto.SwopRateResponse;
 import com.forexconverter.exception.RateNotFoundException;
 import com.forexconverter.exception.RateProviderException;
 import com.forexconverter.model.ExchangeRate;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -18,20 +21,37 @@ import org.springframework.web.client.ResourceAccessException;
 public class SwopRateProvider implements RateProvider {
 
   private final SwopClient swopClient;
+  private final Cache cache;
 
-  public SwopRateProvider(SwopClient swopClient) {
+  public SwopRateProvider(SwopClient swopClient, CacheManager cacheManager) {
     this.swopClient = swopClient;
+    this.cache = cacheManager.getCache(CacheConfig.EXCHANGE_RATES_CACHE);
   }
 
   @Override
   public BigDecimal getRate(Currency from, Currency to) {
+    String todayKey = buildKey(LocalDate.now(), from, to);
+    BigDecimal cached = cache.get(todayKey, BigDecimal.class);
+    if (cached != null) {
+      return cached;
+    }
+
+    SwopRateResponse response;
     try {
-      SwopRateResponse response = swopClient.fetchRate(from.name(), to.name());
-      ExchangeRate exchangeRate = mapToExchangeRate(response);
-      return exchangeRate.rate();
+      response = swopClient.fetchRate(from.name(), to.name());
     } catch (Exception e) {
       throw wrapException(e);
     }
+
+    ExchangeRate exchangeRate = mapToExchangeRate(response);
+
+    cache.put(todayKey, exchangeRate.rate());
+
+    return exchangeRate.rate();
+  }
+
+  private String buildKey(LocalDate date, Currency from, Currency to) {
+    return date + ":" + from + ":" + to;
   }
 
   private RuntimeException wrapException(Exception e) {
