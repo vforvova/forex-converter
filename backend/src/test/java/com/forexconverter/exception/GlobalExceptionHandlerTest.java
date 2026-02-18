@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.forexconverter.Currency;
 import com.forexconverter.dto.ConversionResponse;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @Tag("unit")
 class GlobalExceptionHandlerTest {
 
-  private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+  private final GlobalExceptionHandler handler =
+      new GlobalExceptionHandler(new SimpleMeterRegistry());
 
   @DisplayName("Should return 404 for InvalidCurrencyException")
   @Test

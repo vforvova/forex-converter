@@ -12,6 +12,8 @@ import com.forexconverter.client.SwopClient;
 import com.forexconverter.dto.SwopRateResponse;
 import com.forexconverter.exception.RateNotFoundException;
 import com.forexconverter.exception.RateProviderException;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +45,8 @@ class SwopRateProviderTest {
   @BeforeEach
   void setUp() {
     when(cacheManager.getCache("exchangeRates")).thenReturn(cache);
-    provider = new SwopRateProvider(swopClient, cacheManager);
+    MeterRegistry meterRegistry = new SimpleMeterRegistry();
+    provider = new SwopRateProvider(swopClient, cacheManager, meterRegistry);
     today = LocalDate.now();
   }
 
