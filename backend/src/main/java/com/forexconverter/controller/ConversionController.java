@@ -2,6 +2,7 @@ package com.forexconverter.controller;
 
 import com.forexconverter.Currency;
 import com.forexconverter.dto.ConversionResponse;
+import com.forexconverter.dto.ConversionResult;
 import com.forexconverter.service.ConversionService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -33,6 +34,6 @@ public class ConversionController {
           @DecimalMax(value = "100000000000", message = "Amount must be at most 100000000000")
           BigDecimal amount) {
     BigDecimal result = service.convert(from, to, amount);
-    return ResponseEntity.ok(ConversionResponse.success(result));
+    return ResponseEntity.ok(new ConversionResult(result));
   }
 }

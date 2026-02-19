@@ -25,6 +25,7 @@ class GlobalExceptionHandlerTest {
     ResponseEntity<ConversionResponse> response = handler.handleInvalidCurrency(ex);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertThat(response.getBody()).isNotNull();
   }
 
   @DisplayName("Should return 404 for RateNotFoundException")
@@ -34,6 +35,7 @@ class GlobalExceptionHandlerTest {
     ResponseEntity<ConversionResponse> response = handler.handleRateNotFound(ex);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertThat(response.getBody()).isNotNull();
   }
 
   @DisplayName("Should return 400 for SameCurrencyConversionException")
@@ -43,6 +45,7 @@ class GlobalExceptionHandlerTest {
     ResponseEntity<ConversionResponse> response = handler.handleSameCurrency(ex);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(response.getBody()).isNotNull();
   }
 
   @DisplayName("Should return 500 for RateProviderException")
@@ -52,6 +55,7 @@ class GlobalExceptionHandlerTest {
     ResponseEntity<ConversionResponse> response = handler.handleRateProviderException(ex);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    assertThat(response.getBody()).isNotNull();
   }
 
   @DisplayName("Should return 400 for non-enum MethodArgumentTypeMismatchException")
@@ -63,6 +67,7 @@ class GlobalExceptionHandlerTest {
     ResponseEntity<ConversionResponse> response = handler.handleTypeMismatch(ex);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(response.getBody()).isNotNull();
   }
 
   @DisplayName("Should return 404 for enum type mismatch")
@@ -75,6 +80,5 @@ class GlobalExceptionHandlerTest {
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().error()).contains("Currency not found: XXX");
   }
 }

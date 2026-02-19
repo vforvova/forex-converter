@@ -1,6 +1,7 @@
 package com.forexconverter.exception;
 
 import com.forexconverter.dto.ConversionResponse;
+import com.forexconverter.dto.ErrorResponse;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.validation.ConstraintViolationException;
@@ -36,30 +37,26 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(InvalidCurrencyException.class)
   public ResponseEntity<ConversionResponse> handleInvalidCurrency(InvalidCurrencyException ex) {
     getErrorCounter("InvalidCurrencyException").increment();
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ConversionResponse.error(ex.getMessage()));
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()));
   }
 
   @ExceptionHandler(RateNotFoundException.class)
   public ResponseEntity<ConversionResponse> handleRateNotFound(RateNotFoundException ex) {
     getErrorCounter("RateNotFoundException").increment();
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ConversionResponse.error(ex.getMessage()));
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()));
   }
 
   @ExceptionHandler(SameCurrencyConversionException.class)
   public ResponseEntity<ConversionResponse> handleSameCurrency(SameCurrencyConversionException ex) {
     getErrorCounter("SameCurrencyConversionException").increment();
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ConversionResponse.error(ex.getMessage()));
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage()));
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ConversionResponse> handleConstraintViolation(
       ConstraintViolationException ex) {
     getErrorCounter("ConstraintViolationException").increment();
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ConversionResponse.error(ex.getMessage()));
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage()));
   }
 
   @ExceptionHandler(HandlerMethodValidationException.class)
@@ -67,7 +64,7 @@ public class GlobalExceptionHandler {
       HandlerMethodValidationException ex) {
     getErrorCounter("HandlerMethodValidationException").increment();
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ConversionResponse.error("Validation failed"));
+        .body(new ErrorResponse("Validation failed"));
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -76,24 +73,24 @@ public class GlobalExceptionHandler {
     if (ex.getRequiredType() == null || !ex.getRequiredType().isEnum()) {
       getErrorCounter("MethodArgumentTypeMismatchException").increment();
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(ConversionResponse.error("Invalid parameter"));
+          .body(new ErrorResponse("Invalid parameter"));
     }
     getErrorCounter("CurrencyNotFound").increment();
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ConversionResponse.error("Currency not found: " + ex.getValue()));
+        .body(new ErrorResponse("Currency not found: " + ex.getValue()));
   }
 
   @ExceptionHandler(RateProviderException.class)
   public ResponseEntity<ConversionResponse> handleRateProviderException(RateProviderException ex) {
     getErrorCounter("RateProviderException").increment();
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ConversionResponse.error(ex.getMessage()));
+        .body(new ErrorResponse(ex.getMessage()));
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ConversionResponse> handleGenericException(Exception ex) {
     getErrorCounter("UnexpectedException").increment();
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ConversionResponse.error("An unexpected error occurred"));
+        .body(new ErrorResponse("An unexpected error occurred"));
   }
 }
