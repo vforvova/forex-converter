@@ -59,7 +59,6 @@ class ConversionControllerIntegrationTest {
 
   private static Stream<Arguments> errorScenarios() {
     return Stream.of(
-        Arguments.of("/convert/USD-USD?amount=100", 400),
         Arguments.of("/convert/USD-EUR?amount=-100", 400),
         Arguments.of("/convert/USD-EUR?amount=abc", 400),
         Arguments.of("/convert/USD-XXX?amount=100", 404),
@@ -76,18 +75,18 @@ class ConversionControllerIntegrationTest {
     assertThat(response.statusCode()).isEqualTo(expectedStatus);
   }
 
-  // -- Success scenarios --
+  // -- Cross-currency success scenarios --
 
-  private static Stream<Arguments> successScenarios() {
+  private static Stream<Arguments> crossCurrencySuccessScenarios() {
     return Stream.of(
         Arguments.of("/convert/EUR-USD?amount=100", "EUR", "USD", "1.079301", "107.9301"),
         Arguments.of("/convert/USD-GBP?amount=50", "USD", "GBP", "0.789123", "39.45615"));
   }
 
-  @DisplayName("Should return 200 for successful conversions")
+  @DisplayName("Should return 200 for cross-currency conversions")
   @ParameterizedTest
-  @MethodSource("successScenarios")
-  void shouldConvertCurrencies(
+  @MethodSource("crossCurrencySuccessScenarios")
+  void shouldConvertCrossCurrencies(
       String urlPath, String from, String to, String rate, String expectedResult) throws Exception {
     mockServer.enqueue(
         new MockResponse()
@@ -103,6 +102,25 @@ class ConversionControllerIntegrationTest {
                     """,
                     from, to, rate))
             .addHeader("Content-Type", "application/json"));
+
+    HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url(urlPath))).GET().build();
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(response.body()).contains("\"result\":" + expectedResult);
+  }
+
+  // -- Same-currency success scenarios --
+
+  private static Stream<Arguments> sameCurrencySuccessScenarios() {
+    return Stream.of(
+        Arguments.of("/convert/USD-USD?amount=100", "100"), Arguments.of("/convert/EUR-EUR", "1"));
+  }
+
+  @DisplayName("Should return 200 for same-currency conversions (identity)")
+  @ParameterizedTest
+  @MethodSource("sameCurrencySuccessScenarios")
+  void shouldReturnIdentityForSameCurrency(String urlPath, String expectedResult) throws Exception {
 
     HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url(urlPath))).GET().build();
     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());

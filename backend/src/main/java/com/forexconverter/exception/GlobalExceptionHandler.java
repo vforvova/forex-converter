@@ -46,12 +46,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()));
   }
 
-  @ExceptionHandler(SameCurrencyConversionException.class)
-  public ResponseEntity<ConversionResponse> handleSameCurrency(SameCurrencyConversionException ex) {
-    getErrorCounter("SameCurrencyConversionException").increment();
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage()));
-  }
-
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ConversionResponse> handleConstraintViolation(
       ConstraintViolationException ex) {

@@ -1,12 +1,11 @@
 package com.forexconverter.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.forexconverter.Currency;
-import com.forexconverter.exception.SameCurrencyConversionException;
 import com.forexconverter.provider.RateProvider;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
@@ -40,14 +39,27 @@ class ConversionServiceTest {
     assertThat(result).isEqualByComparingTo(new BigDecimal("0.9250"));
   }
 
-  @DisplayName("ConversionService should throw when converting same currency")
+  @DisplayName("ConversionService should return amount for same currency with amount")
   @Test
-  void shouldThrowForSameCurrency() {
+  void shouldReturnAmountForSameCurrencyWithAmount() {
     RateProvider mockProvider = mock(RateProvider.class);
     ConversionService service = new ConversionService(mockProvider);
 
-    assertThatThrownBy(() -> service.convert(Currency.USD, Currency.USD, new BigDecimal("100")))
-        .isInstanceOf(SameCurrencyConversionException.class)
-        .hasMessageContaining("Source and target currency cannot be the same");
+    BigDecimal result = service.convert(Currency.USD, Currency.USD, new BigDecimal("100"));
+
+    assertThat(result).isEqualByComparingTo(new BigDecimal("100"));
+    verifyNoInteractions(mockProvider);
+  }
+
+  @DisplayName("ConversionService should return 1 for same currency without amount")
+  @Test
+  void shouldReturnOneForSameCurrencyWithoutAmount() {
+    RateProvider mockProvider = mock(RateProvider.class);
+    ConversionService service = new ConversionService(mockProvider);
+
+    BigDecimal result = service.convert(Currency.USD, Currency.USD, null);
+
+    assertThat(result).isEqualByComparingTo(BigDecimal.ONE);
+    verifyNoInteractions(mockProvider);
   }
 }

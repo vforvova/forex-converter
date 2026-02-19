@@ -38,16 +38,6 @@ class GlobalExceptionHandlerTest {
     assertThat(response.getBody()).isNotNull();
   }
 
-  @DisplayName("Should return 400 for SameCurrencyConversionException")
-  @Test
-  void shouldReturn400ForSameCurrency() {
-    SameCurrencyConversionException ex = new SameCurrencyConversionException();
-    ResponseEntity<ConversionResponse> response = handler.handleSameCurrency(ex);
-
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    assertThat(response.getBody()).isNotNull();
-  }
-
   @DisplayName("Should return 500 for RateProviderException")
   @Test
   void shouldReturn500ForRateProviderException() {
