@@ -7,10 +7,21 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,metrics
   endpoint:
     health:
       show-details: never
+  influx:
+    metrics:
+      export:
+        enabled: true
+        uri: ${INFLUX_URL}
+        api-version: v2
+        org: ${INFLUX_ORG}
+        bucket: ${INFLUX_BUCKET}
+        token: ${INFLUX_TOKEN}
+        step: 10s
+        auto-create-db: false
 
 server:
   port: 8080

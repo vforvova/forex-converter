@@ -1,0 +1,57 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./backend/.env
+    environment:
+      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_ORG=${INFLUX_ORG:-organization}
+      - INFLUX_BUCKET=${INFLUX_BUCKET:-forex-converter}
+      - INFLUX_TOKEN=${INFLUX_TOKEN:-token}
+    depends_on:
+      influxdb:
+        condition: service_healthy
+
+  influxdb:
+    image: influxdb:2
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=adminadmin
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG:-organization}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET:-forex-converter}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUX_TOKEN:-token}
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - influxdb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  influxdb-data:
+  grafana-data:
