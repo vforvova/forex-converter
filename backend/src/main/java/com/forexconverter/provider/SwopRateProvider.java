@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.converter.HttpMessageConversionException;
@@ -24,6 +26,8 @@ import org.springframework.web.client.ResourceAccessException;
 
 @Service
 public class SwopRateProvider implements RateProvider {
+
+  private static final Logger log = LoggerFactory.getLogger(SwopRateProvider.class);
 
   private final SwopClient swopClient;
   private final Cache cache;
@@ -108,6 +112,7 @@ public class SwopRateProvider implements RateProvider {
       return exchangeRate.rate();
     } catch (Exception e) {
       getApiErrorCounter(e.getClass().getSimpleName()).increment();
+      log.error("Failed to fetch rate for {} -> {}: {}", from, to, e.getMessage(), e);
       throw wrapException(e);
     } finally {
       String pair = from.name() + ":" + to.name();
