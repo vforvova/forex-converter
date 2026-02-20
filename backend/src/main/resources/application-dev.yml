@@ -1,0 +1,17 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,env,beans
+  endpoint:
+    health:
+      show-details: always
+  influx:
+    metrics:
+      export:
+        enabled: false
+
+logging:
+  level:
+    root: INFO
+    com.forexconverter: DEBUG

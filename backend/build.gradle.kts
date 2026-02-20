@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.run.BootRun
+
 plugins {
     java
     id("org.springframework.boot") version "4.0.2"
@@ -50,6 +52,8 @@ jacoco {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
+    systemProperty("spring.profiles.active", "test")
+
     testLogging {
         events("skipped", "failed")
         showExceptions = true
@@ -73,6 +77,10 @@ tasks.withType<Test>().configureEach {
             includeTags("integration")
         }
     }
+}
+
+tasks.named<BootRun>("bootRun") {
+    systemProperty("spring.profiles.active", "dev")
 }
 
 tasks.named<JacocoReport>("jacocoTestReport") {
