@@ -41,9 +41,16 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - INFLUX_ORG=${INFLUX_ORG:-organization}
+      - INFLUX_BUCKET=${INFLUX_BUCKET:-forex-converter}
+      - INFLUX_TOKEN=${INFLUX_TOKEN:-token}
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./backend/dashboards:/etc/grafana/provisioning/dashboards
     depends_on:
       - influxdb
     healthcheck:
