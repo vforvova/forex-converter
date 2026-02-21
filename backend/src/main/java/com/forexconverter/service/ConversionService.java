@@ -1,8 +1,8 @@
 package com.forexconverter.service;
 
-import com.forexconverter.Currency;
 import com.forexconverter.provider.RateProvider;
 import java.math.BigDecimal;
+import java.util.Currency;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +14,7 @@ public class ConversionService {
   }
 
   public BigDecimal convert(Currency from, Currency to, BigDecimal amount) {
-    if (from == to) {
+    if (from.equals(to)) {
       return amount != null ? amount : BigDecimal.ONE;
     }
     BigDecimal rate = rateProvider.getRate(from, to);

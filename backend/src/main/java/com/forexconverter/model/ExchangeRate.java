@@ -1,8 +1,8 @@
 package com.forexconverter.model;
 
-import com.forexconverter.Currency;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Currency;
 
 public record ExchangeRate(
     Currency sourceCurrency, Currency targetCurrency, BigDecimal rate, LocalDate date) {

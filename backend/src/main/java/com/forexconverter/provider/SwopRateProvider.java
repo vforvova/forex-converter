@@ -1,6 +1,5 @@
 package com.forexconverter.provider;
 
-import com.forexconverter.Currency;
 import com.forexconverter.client.SwopClient;
 import com.forexconverter.config.CacheConfig;
 import com.forexconverter.dto.SwopRateResponse;
@@ -12,6 +11,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Currency;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
@@ -103,8 +103,9 @@ public class SwopRateProvider implements RateProvider {
 
     Timer.Sample sample = Timer.start();
     try {
-      SwopRateResponse response = swopClient.fetchRate(from.name(), to.name());
-      String pair = from.name() + ":" + to.name();
+      SwopRateResponse response =
+          swopClient.fetchRate(from.getCurrencyCode(), to.getCurrencyCode());
+      String pair = from.getCurrencyCode() + ":" + to.getCurrencyCode();
       getApiSuccessCounter(pair).increment();
 
       ExchangeRate exchangeRate = mapToExchangeRate(response);
@@ -115,7 +116,7 @@ public class SwopRateProvider implements RateProvider {
       log.error("Failed to fetch rate for {} -> {}: {}", from, to, e.getMessage(), e);
       throw wrapException(e);
     } finally {
-      String pair = from.name() + ":" + to.name();
+      String pair = from.getCurrencyCode() + ":" + to.getCurrencyCode();
       sample.stop(getLatencyTimer(pair));
     }
   }
@@ -150,8 +151,8 @@ public class SwopRateProvider implements RateProvider {
 
   private ExchangeRate mapToExchangeRate(SwopRateResponse response) {
     return new ExchangeRate(
-        Currency.valueOf(response.baseCurrency()),
-        Currency.valueOf(response.quoteCurrency()),
+        Currency.getInstance(response.baseCurrency()),
+        Currency.getInstance(response.quoteCurrency()),
         response.quote(),
         LocalDate.parse(response.date()));
   }

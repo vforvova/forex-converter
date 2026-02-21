@@ -5,9 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.forexconverter.Currency;
 import com.forexconverter.service.ConversionService;
 import java.math.BigDecimal;
+import java.util.Currency;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,10 @@ class ConversionControllerTest {
   @DisplayName("ConversionController should return 200 with result")
   @Test
   void shouldReturnConversionResult() throws Exception {
-    when(conversionService.convert(Currency.USD, Currency.EUR, new BigDecimal("100")))
+    Currency usd = Currency.getInstance("USD");
+    Currency eur = Currency.getInstance("EUR");
+
+    when(conversionService.convert(usd, eur, new BigDecimal("100")))
         .thenReturn(new BigDecimal("92.50"));
 
     mockMvc
@@ -41,8 +44,10 @@ class ConversionControllerTest {
   @DisplayName("ConversionController should return 200 with rate when amount is missing")
   @Test
   void shouldReturnRateWhenAmountMissing() throws Exception {
-    when(conversionService.convert(Currency.USD, Currency.EUR, null))
-        .thenReturn(new BigDecimal("0.9250"));
+    Currency usd = Currency.getInstance("USD");
+    Currency eur = Currency.getInstance("EUR");
+
+    when(conversionService.convert(usd, eur, null)).thenReturn(new BigDecimal("0.9250"));
 
     mockMvc
         .perform(get("/convert/USD-EUR"))
@@ -50,11 +55,17 @@ class ConversionControllerTest {
         .andExpect(jsonPath("$.result").value(0.925));
   }
 
+  @DisplayName("ConversionController should return 400 for invalid currency code")
+  @Test
+  void shouldReturn400ForInvalidCurrencyCode() throws Exception {
+    mockMvc.perform(get("/convert/XYZ-EUR")).andExpect(status().isBadRequest());
+  }
+
   @DisplayName("ConversionController should return 400 for invalid amount")
   @Test
   void shouldReturn400ForInvalidAmount() throws Exception {
     mockMvc
-        .perform(get("/convert/USD-EUR").param("amount", "abc"))
+        .perform(get("/convert/USD-EUR").param("amount", "-100"))
         .andExpect(status().isBadRequest());
   }
 }

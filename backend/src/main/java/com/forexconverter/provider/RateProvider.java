@@ -1,7 +1,7 @@
 package com.forexconverter.provider;
 
-import com.forexconverter.Currency;
 import java.math.BigDecimal;
+import java.util.Currency;
 
 public interface RateProvider {
   BigDecimal getRate(Currency from, Currency to);

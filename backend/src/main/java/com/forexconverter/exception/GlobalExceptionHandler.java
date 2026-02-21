@@ -34,10 +34,11 @@ public class GlobalExceptionHandler {
                 .register(meterRegistry));
   }
 
-  @ExceptionHandler(InvalidCurrencyException.class)
-  public ResponseEntity<ConversionResponse> handleInvalidCurrency(InvalidCurrencyException ex) {
-    getErrorCounter("InvalidCurrencyException").increment();
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()));
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ConversionResponse> handleIllegalArgument(IllegalArgumentException ex) {
+    getErrorCounter("IllegalArgumentException").increment();
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse("Invalid currency code: " + ex.getMessage()));
   }
 
   @ExceptionHandler(RateNotFoundException.class)
@@ -64,14 +65,9 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   public ResponseEntity<ConversionResponse> handleTypeMismatch(
       MethodArgumentTypeMismatchException ex) {
-    if (ex.getRequiredType() == null || !ex.getRequiredType().isEnum()) {
-      getErrorCounter("MethodArgumentTypeMismatchException").increment();
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(new ErrorResponse("Invalid parameter"));
-    }
-    getErrorCounter("CurrencyNotFound").increment();
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(new ErrorResponse("Currency not found: " + ex.getValue()));
+    getErrorCounter("MethodArgumentTypeMismatchException").increment();
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse("Invalid parameter"));
   }
 
   @ExceptionHandler(RateProviderException.class)

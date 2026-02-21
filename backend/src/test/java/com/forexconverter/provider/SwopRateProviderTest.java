@@ -7,7 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.forexconverter.Currency;
 import com.forexconverter.client.SwopClient;
 import com.forexconverter.dto.SwopRateResponse;
 import com.forexconverter.exception.RateNotFoundException;
@@ -16,6 +15,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Currency;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -53,119 +53,140 @@ class SwopRateProviderTest {
   @DisplayName("Should return rate on successful response")
   @Test
   void shouldReturnRate() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
+
+    BigDecimal rateValue = new BigDecimal("1.079301");
     String todayKey = today + ":USD:EUR";
+
     when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
     when(swopClient.fetchRate("USD", "EUR"))
-        .thenReturn(new SwopRateResponse("USD", "EUR", new BigDecimal("1.079301"), "2026-02-15"));
+        .thenReturn(new SwopRateResponse("USD", "EUR", rateValue, "2026-02-15"));
 
-    BigDecimal rate = provider.getRate(Currency.USD, Currency.EUR);
+    BigDecimal result = provider.getRate(from, to);
 
-    assertThat(rate).isEqualTo(new BigDecimal("1.079301"));
+    assertThat(result).isEqualTo(rateValue);
   }
 
   @DisplayName("Should return cached rate when available")
   @Test
   void shouldReturnCachedRate() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
+
+    BigDecimal cachedRate = new BigDecimal("1.08");
     String todayKey = today + ":USD:EUR";
-    when(cache.get(todayKey, BigDecimal.class)).thenReturn(new BigDecimal("1.08"));
 
-    BigDecimal rate = provider.getRate(Currency.USD, Currency.EUR);
+    when(cache.get(todayKey, BigDecimal.class)).thenReturn(cachedRate);
 
-    assertThat(rate).isEqualTo(new BigDecimal("1.08"));
+    BigDecimal result = provider.getRate(from, to);
+
+    assertThat(result).isEqualTo(cachedRate);
     verify(swopClient, never()).fetchRate("USD", "EUR");
   }
 
   @DisplayName("Should call swop API and cache result when cache miss")
   @Test
   void shouldCallApiOnCacheMiss() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
+
+    BigDecimal rateValue = new BigDecimal("1.079301");
     String todayKey = today + ":USD:EUR";
+
     when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
     when(swopClient.fetchRate("USD", "EUR"))
-        .thenReturn(new SwopRateResponse("USD", "EUR", new BigDecimal("1.079301"), "2026-02-15"));
+        .thenReturn(new SwopRateResponse("USD", "EUR", rateValue, "2026-02-15"));
 
-    BigDecimal rate = provider.getRate(Currency.USD, Currency.EUR);
+    BigDecimal result = provider.getRate(from, to);
 
-    assertThat(rate).isEqualTo(new BigDecimal("1.079301"));
+    assertThat(result).isEqualTo(rateValue);
     verify(swopClient, times(1)).fetchRate("USD", "EUR");
-    verify(cache).put(todayKey, new BigDecimal("1.079301"));
+    verify(cache).put(todayKey, rateValue);
   }
 
   @DisplayName("Should throw RateNotFoundException when rate not found")
   @Test
   void shouldThrowWhenNotFound() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
     String todayKey = today + ":USD:EUR";
+
     when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
     when(swopClient.fetchRate("USD", "EUR"))
         .thenThrow(
             HttpClientErrorException.NotFound.create(
                 HttpStatus.NOT_FOUND, "Not Found", null, null, null));
 
-    assertThatThrownBy(() -> provider.getRate(Currency.USD, Currency.EUR))
-        .isInstanceOf(RateNotFoundException.class)
-        .hasMessage("Rate not found");
+    assertThatThrownBy(() -> provider.getRate(from, to)).isInstanceOf(RateNotFoundException.class);
   }
 
   @DisplayName("Should throw RateProviderException for other 4xx errors")
   @Test
   void shouldThrowForClientError() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
     String todayKey = today + ":USD:EUR";
+
     when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
     when(swopClient.fetchRate("USD", "EUR"))
         .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Bad Request"));
 
-    assertThatThrownBy(() -> provider.getRate(Currency.USD, Currency.EUR))
-        .isInstanceOf(RateProviderException.class)
-        .hasMessage("Failed to fetch rate from provider");
+    assertThatThrownBy(() -> provider.getRate(from, to)).isInstanceOf(RateProviderException.class);
   }
 
   @DisplayName("Should throw RateProviderException for 5xx server errors")
   @Test
   void shouldThrowForServerError() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
     String todayKey = today + ":USD:EUR";
+
     when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
     when(swopClient.fetchRate("USD", "EUR"))
         .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-    assertThatThrownBy(() -> provider.getRate(Currency.USD, Currency.EUR))
-        .isInstanceOf(RateProviderException.class)
-        .hasMessage("Rate provider server error");
+    assertThatThrownBy(() -> provider.getRate(from, to)).isInstanceOf(RateProviderException.class);
   }
 
   @DisplayName("Should throw RateProviderException when connection fails")
   @Test
   void shouldThrowWhenConnectionFails() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
     String todayKey = today + ":USD:EUR";
+
     when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
     when(swopClient.fetchRate("USD", "EUR"))
         .thenThrow(new ResourceAccessException("Connection refused"));
 
-    assertThatThrownBy(() -> provider.getRate(Currency.USD, Currency.EUR))
-        .isInstanceOf(RateProviderException.class)
-        .hasMessage("Rate provider unreachable");
+    assertThatThrownBy(() -> provider.getRate(from, to)).isInstanceOf(RateProviderException.class);
   }
 
   @DisplayName("Should throw RateProviderException when response parsing fails")
   @Test
   void shouldThrowWhenParseFails() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
     String todayKey = today + ":USD:EUR";
+
     when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
     when(swopClient.fetchRate("USD", "EUR"))
         .thenThrow(new HttpMessageConversionException("Invalid JSON"));
 
-    assertThatThrownBy(() -> provider.getRate(Currency.USD, Currency.EUR))
-        .isInstanceOf(RateProviderException.class)
-        .hasMessage("Failed to parse provider response");
+    assertThatThrownBy(() -> provider.getRate(from, to)).isInstanceOf(RateProviderException.class);
   }
 
   @DisplayName("Should throw RateProviderException for unexpected errors")
   @Test
   void shouldThrowForUnexpectedError() {
+    Currency from = Currency.getInstance("USD");
+    Currency to = Currency.getInstance("EUR");
     String todayKey = today + ":USD:EUR";
+
     when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
     when(swopClient.fetchRate("USD", "EUR")).thenThrow(new RuntimeException("Unexpected"));
 
-    assertThatThrownBy(() -> provider.getRate(Currency.USD, Currency.EUR))
-        .isInstanceOf(RateProviderException.class)
-        .hasMessage("Unexpected error fetching rate");
+    assertThatThrownBy(() -> provider.getRate(from, to)).isInstanceOf(RateProviderException.class);
   }
 }

@@ -2,9 +2,12 @@ package com.forexconverter.exception;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.forexconverter.Currency;
 import com.forexconverter.dto.ConversionResponse;
+import com.forexconverter.dto.ErrorResponse;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import jakarta.validation.ConstraintViolationException;
+import java.math.BigDecimal;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -18,14 +21,14 @@ class GlobalExceptionHandlerTest {
   private final GlobalExceptionHandler handler =
       new GlobalExceptionHandler(new SimpleMeterRegistry());
 
-  @DisplayName("Should return 404 for InvalidCurrencyException")
+  @DisplayName("Should return 400 for IllegalArgumentException")
   @Test
-  void shouldReturn404ForInvalidCurrency() {
-    InvalidCurrencyException ex = new InvalidCurrencyException("Currency XXX not registered");
-    ResponseEntity<ConversionResponse> response = handler.handleInvalidCurrency(ex);
+  void shouldReturn400ForIllegalArgument() {
+    IllegalArgumentException ex = new IllegalArgumentException("Invalid currency code");
+    ResponseEntity<ConversionResponse> response = handler.handleIllegalArgument(ex);
 
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(response.getBody()).isInstanceOf(ErrorResponse.class);
   }
 
   @DisplayName("Should return 404 for RateNotFoundException")
@@ -35,7 +38,30 @@ class GlobalExceptionHandlerTest {
     ResponseEntity<ConversionResponse> response = handler.handleRateNotFound(ex);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody()).isInstanceOf(ErrorResponse.class);
+  }
+
+  @DisplayName("Should return 400 for ConstraintViolationException")
+  @Test
+  void shouldReturn400ForConstraintViolation() {
+    ConstraintViolationException ex =
+        new ConstraintViolationException("Amount must be at least 0.01", Set.of());
+    ResponseEntity<ConversionResponse> response = handler.handleConstraintViolation(ex);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(response.getBody()).isInstanceOf(ErrorResponse.class);
+  }
+
+  @DisplayName("Should return 400 for MethodArgumentTypeMismatchException")
+  @Test
+  void shouldReturn400ForTypeMismatch() {
+    MethodArgumentTypeMismatchException ex =
+        new MethodArgumentTypeMismatchException("abc", BigDecimal.class, "amount", null, null);
+
+    ResponseEntity<ConversionResponse> response = handler.handleTypeMismatch(ex);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(response.getBody()).isInstanceOf(ErrorResponse.class);
   }
 
   @DisplayName("Should return 500 for RateProviderException")
@@ -45,30 +71,16 @@ class GlobalExceptionHandlerTest {
     ResponseEntity<ConversionResponse> response = handler.handleRateProviderException(ex);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody()).isInstanceOf(ErrorResponse.class);
   }
 
-  @DisplayName("Should return 400 for non-enum MethodArgumentTypeMismatchException")
+  @DisplayName("Should return 500 for generic Exception (catch-all)")
   @Test
-  void shouldReturn400ForNonEnumTypeMismatch() {
-    MethodArgumentTypeMismatchException ex =
-        new MethodArgumentTypeMismatchException("XXX", String.class, "param", null, null);
+  void shouldReturn500ForGenericException() {
+    Exception ex = new RuntimeException("Unexpected error");
+    ResponseEntity<ConversionResponse> response = handler.handleGenericException(ex);
 
-    ResponseEntity<ConversionResponse> response = handler.handleTypeMismatch(ex);
-
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    assertThat(response.getBody()).isNotNull();
-  }
-
-  @DisplayName("Should return 404 for enum type mismatch")
-  @Test
-  void shouldReturn404ForEnumTypeMismatch() {
-    MethodArgumentTypeMismatchException ex =
-        new MethodArgumentTypeMismatchException("XXX", Currency.class, "currency", null, null);
-
-    ResponseEntity<ConversionResponse> response = handler.handleTypeMismatch(ex);
-
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    assertThat(response.getBody()).isInstanceOf(ErrorResponse.class);
   }
 }

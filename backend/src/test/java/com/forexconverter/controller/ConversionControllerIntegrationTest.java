@@ -61,8 +61,8 @@ class ConversionControllerIntegrationTest {
     return Stream.of(
         Arguments.of("/convert/USD-EUR?amount=-100", 400),
         Arguments.of("/convert/USD-EUR?amount=abc", 400),
-        Arguments.of("/convert/USD-XXX?amount=100", 404),
-        Arguments.of("/convert/XXX-EUR?amount=100", 404));
+        Arguments.of("/convert/USD-XYZ?amount=100", 400),
+        Arguments.of("/convert/XYZ-EUR?amount=100", 400));
   }
 
   @DisplayName("Should respond with errors")
