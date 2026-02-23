@@ -6,6 +6,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,6 +28,12 @@ public class WarmupRunner implements ApplicationRunner {
   @Async
   public void run(ApplicationArguments args) {
     log.info("Starting cache warmup");
+    swopProvider.warmupCache();
+  }
+
+  @Scheduled(cron = "0 0 1 * * *", zone = "UTC")
+  public void refreshCache() {
+    log.info("Starting scheduled cache refresh");
     swopProvider.warmupCache();
   }
 }
