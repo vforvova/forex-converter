@@ -115,6 +115,24 @@ public class SwopProvider implements Provider {
     }
   }
 
+  public void warmupCache() {
+    try {
+      var response = client.fetchAllRates();
+      LocalDate today = LocalDate.now();
+      for (var rate : response.rates()) {
+        String key =
+            buildKey(
+                today,
+                Currency.getInstance(rate.baseCurrency()),
+                Currency.getInstance(rate.quoteCurrency()));
+        cache.put(key, rate.quote());
+      }
+      log.info("Cache warmup completed, loaded {} rates", response.rates().size());
+    } catch (Exception e) {
+      log.error("Cache warmup failed: {}", e.getMessage(), e);
+    }
+  }
+
   private String buildKey(LocalDate date, Currency from, Currency to) {
     return date + ":" + from + ":" + to;
   }
