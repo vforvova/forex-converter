@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.List;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -58,6 +59,44 @@ class ClientTest {
 
     RecordedRequest request = mockServer.takeRequest();
     assertThat(request.getPath()).isEqualTo("/rest/rates/EUR/USD");
+    assertThat(request.getHeader("Authorization")).isEqualTo("ApiKey test-key");
+  }
+
+  @Test
+  void shouldFetchAllRatesFromSwop() throws InterruptedException {
+    mockServer.enqueue(
+        new MockResponse()
+            .setBody(
+                """
+                [
+                    {
+                        "base_currency": "EUR",
+                        "quote_currency": "USD",
+                        "quote": 1.079301,
+                        "date": "2026-02-22"
+                    },
+                    {
+                        "base_currency": "EUR",
+                        "quote_currency": "GBP",
+                        "quote": 0.852341,
+                        "date": "2026-02-22"
+                    }
+                ]
+                """)
+            .addHeader("Content-Type", "application/json"));
+
+    Client client = new Client(properties);
+    AllRatesResponse response = client.fetchAllRates();
+
+    assertThat(response.rates()).hasSize(2);
+    assertThat(response.rates().get(0).baseCurrency()).isEqualTo("EUR");
+    assertThat(response.rates().get(0).quoteCurrency()).isEqualTo("USD");
+    assertThat(response.rates().get(0).quote()).isEqualTo(new BigDecimal("1.079301"));
+    assertThat(response.rates().get(1).quoteCurrency()).isEqualTo("GBP");
+    assertThat(response.rates().get(1).quote()).isEqualTo(new BigDecimal("0.852341"));
+
+    RecordedRequest request = mockServer.takeRequest();
+    assertThat(request.getPath()).isEqualTo("/rest/rates");
     assertThat(request.getHeader("Authorization")).isEqualTo("ApiKey test-key");
   }
 }

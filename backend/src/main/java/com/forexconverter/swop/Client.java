@@ -1,5 +1,7 @@
 package com.forexconverter.swop;
 
+import java.util.List;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -28,5 +30,15 @@ public class Client {
         .uri("/rest/rates/{base}/{quote}", baseCurrency, quoteCurrency)
         .retrieve()
         .body(RateResponseDTO.class);
+  }
+
+  public AllRatesResponse fetchAllRates() {
+    List<RateResponseDTO> rates =
+        restClient
+            .get()
+            .uri("/rest/rates")
+            .retrieve()
+            .body(new ParameterizedTypeReference<List<RateResponseDTO>>() {});
+    return new AllRatesResponse(rates);
   }
 }
