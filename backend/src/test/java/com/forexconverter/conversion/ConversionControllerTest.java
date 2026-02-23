@@ -67,4 +67,36 @@ class ConversionControllerTest {
         .perform(get("/convert/USD-EUR").param("amount", "-100"))
         .andExpect(status().isBadRequest());
   }
+
+  @DisplayName(
+      "ConversionController should accept lowercase currency codes")
+  @Test
+  void shouldAcceptLowercaseCurrencyCodes() throws Exception {
+    Currency usd = Currency.getInstance("USD");
+    Currency eur = Currency.getInstance("EUR");
+
+    when(conversionService.convert(usd, eur, new BigDecimal("100")))
+        .thenReturn(new BigDecimal("92.50"));
+
+    mockMvc
+        .perform(get("/convert/usd-eur").param("amount", "100"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.result").value(92.5));
+  }
+
+  @DisplayName(
+      "ConversionController should accept mixed case currency codes")
+  @Test
+  void shouldAcceptMixedCaseCurrencyCodes() throws Exception {
+    Currency usd = Currency.getInstance("USD");
+    Currency eur = Currency.getInstance("EUR");
+
+    when(conversionService.convert(usd, eur, new BigDecimal("100")))
+        .thenReturn(new BigDecimal("92.50"));
+
+    mockMvc
+        .perform(get("/convert/Usd-EuR").param("amount", "100"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.result").value(92.5));
+  }
 }

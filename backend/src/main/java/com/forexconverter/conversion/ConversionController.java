@@ -30,8 +30,8 @@ public class ConversionController {
           @DecimalMin(value = "0.01", message = "Amount must be at least 0.01")
           @DecimalMax(value = "100000000000", message = "Amount must be at most 100000000000")
           BigDecimal amount) {
-    Currency fromCurrency = Currency.getInstance(from);
-    Currency toCurrency = Currency.getInstance(to);
+    Currency fromCurrency = Currency.getInstance(from.toUpperCase());
+    Currency toCurrency = Currency.getInstance(to.toUpperCase());
     BigDecimal result = service.convert(fromCurrency, toCurrency, amount);
     return ResponseEntity.ok(new SuccessResponseDTO(result));
   }
