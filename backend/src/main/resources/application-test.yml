@@ -3,3 +3,8 @@ management:
     metrics:
       export:
         enabled: false
+
+forex:
+  cache:
+    warmup:
+      enabled: false
