@@ -68,8 +68,7 @@ class ConversionControllerTest {
         .andExpect(status().isBadRequest());
   }
 
-  @DisplayName(
-      "ConversionController should accept lowercase currency codes")
+  @DisplayName("ConversionController should accept lowercase currency codes")
   @Test
   void shouldAcceptLowercaseCurrencyCodes() throws Exception {
     Currency usd = Currency.getInstance("USD");
@@ -84,8 +83,7 @@ class ConversionControllerTest {
         .andExpect(jsonPath("$.result").value(92.5));
   }
 
-  @DisplayName(
-      "ConversionController should accept mixed case currency codes")
+  @DisplayName("ConversionController should accept mixed case currency codes")
   @Test
   void shouldAcceptMixedCaseCurrencyCodes() throws Exception {
     Currency usd = Currency.getInstance("USD");
