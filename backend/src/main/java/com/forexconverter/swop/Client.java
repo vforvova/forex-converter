@@ -1,6 +1,5 @@
 package com.forexconverter.swop;
 
-import io.micrometer.core.instrument.Timer;
 import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +29,6 @@ public class Client {
   }
 
   public ResponseEntity<RateResponseDTO> fetchRate(String baseCurrency, String quoteCurrency) {
-    Timer.Sample sample = metrics.startSample();
     ResponseEntity<RateResponseDTO> response =
         restClient
             .get()
@@ -39,14 +37,12 @@ public class Client {
             .toEntity(RateResponseDTO.class);
 
     int statusCode = response.getStatusCode().value();
-    metrics.recordLatency(sample, "rate", statusCode);
     metrics.recordCall("rate", statusCode);
 
     return response;
   }
 
   public ResponseEntity<List<RateResponseDTO>> fetchAllRates() {
-    Timer.Sample sample = metrics.startSample();
     ResponseEntity<List<RateResponseDTO>> response =
         restClient
             .get()
@@ -55,7 +51,6 @@ public class Client {
             .toEntity(new ParameterizedTypeReference<List<RateResponseDTO>>() {});
 
     int statusCode = response.getStatusCode().value();
-    metrics.recordLatency(sample, "all_rates", statusCode);
     metrics.recordCall("all_rates", statusCode);
 
     return response;
