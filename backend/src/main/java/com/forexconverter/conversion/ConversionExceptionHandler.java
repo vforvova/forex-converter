@@ -7,6 +7,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.validation.ConstraintViolationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,6 +18,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @ControllerAdvice
 public class ConversionExceptionHandler {
+
+  private static final Logger log = LoggerFactory.getLogger(ConversionExceptionHandler.class);
 
   private final MeterRegistry meterRegistry;
   private final ConcurrentMap<String, Counter> errorCounters = new ConcurrentHashMap<>();
@@ -77,6 +81,7 @@ public class ConversionExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ResponseDTO> handleGenericException(Exception ex) {
+    log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
     getErrorCounter("UnexpectedException").increment();
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(new ErrorResponseDTO("An unexpected error occurred"));
