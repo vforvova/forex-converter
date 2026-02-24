@@ -2,15 +2,18 @@ package com.forexconverter.swop;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.List;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 
 class ClientTest {
 
@@ -48,13 +51,14 @@ class ClientTest {
                 """)
             .addHeader("Content-Type", "application/json"));
 
-    Client client = new Client(properties);
-    RateResponseDTO response = client.fetchRate("EUR", "USD");
+    Client client = new Client(properties, new Metrics(new SimpleMeterRegistry()));
+    ResponseEntity<RateResponseDTO> response = client.fetchRate("EUR", "USD");
 
-    assertThat(response.baseCurrency()).isEqualTo("EUR");
-    assertThat(response.quoteCurrency()).isEqualTo("USD");
-    assertThat(response.quote()).isEqualTo(new BigDecimal("1.079301"));
-    assertThat(response.date()).isEqualTo("2026-02-15");
+    assertThat(response.getBody().baseCurrency()).isEqualTo("EUR");
+    assertThat(response.getBody().quoteCurrency()).isEqualTo("USD");
+    assertThat(response.getBody().quote()).isEqualTo(new BigDecimal("1.079301"));
+    assertThat(response.getBody().date()).isEqualTo("2026-02-15");
+    assertThat(response.getStatusCode().value()).isEqualTo(200);
 
     RecordedRequest request = mockServer.takeRequest();
     assertThat(request.getPath()).isEqualTo("/rest/rates/EUR/USD");
@@ -84,15 +88,16 @@ class ClientTest {
                 """)
             .addHeader("Content-Type", "application/json"));
 
-    Client client = new Client(properties);
-    AllRatesResponse response = client.fetchAllRates();
+    Client client = new Client(properties, new Metrics(new SimpleMeterRegistry()));
+    ResponseEntity<List<RateResponseDTO>> response = client.fetchAllRates();
 
-    assertThat(response.rates()).hasSize(2);
-    assertThat(response.rates().get(0).baseCurrency()).isEqualTo("EUR");
-    assertThat(response.rates().get(0).quoteCurrency()).isEqualTo("USD");
-    assertThat(response.rates().get(0).quote()).isEqualTo(new BigDecimal("1.079301"));
-    assertThat(response.rates().get(1).quoteCurrency()).isEqualTo("GBP");
-    assertThat(response.rates().get(1).quote()).isEqualTo(new BigDecimal("0.852341"));
+    assertThat(response.getBody()).hasSize(2);
+    assertThat(response.getBody().get(0).baseCurrency()).isEqualTo("EUR");
+    assertThat(response.getBody().get(0).quoteCurrency()).isEqualTo("USD");
+    assertThat(response.getBody().get(0).quote()).isEqualTo(new BigDecimal("1.079301"));
+    assertThat(response.getBody().get(1).quoteCurrency()).isEqualTo("GBP");
+    assertThat(response.getBody().get(1).quote()).isEqualTo(new BigDecimal("0.852341"));
+    assertThat(response.getStatusCode().value()).isEqualTo(200);
 
     RecordedRequest request = mockServer.takeRequest();
     assertThat(request.getPath()).isEqualTo("/rest/rates");

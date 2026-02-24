@@ -8,7 +8,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.forexconverter.swop.AllRatesResponse;
 import com.forexconverter.swop.Client;
 import com.forexconverter.swop.RateResponseDTO;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -28,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -67,7 +67,8 @@ class SwopProviderTest {
 
       when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
       when(client.fetchRate("USD", "EUR"))
-          .thenReturn(new RateResponseDTO("USD", "EUR", rateValue, "2026-02-15"));
+          .thenReturn(
+              ResponseEntity.ok(new RateResponseDTO("USD", "EUR", rateValue, "2026-02-15")));
 
       BigDecimal result = provider.getRate(from, to);
 
@@ -102,7 +103,8 @@ class SwopProviderTest {
 
       when(cache.get(todayKey, BigDecimal.class)).thenReturn(null);
       when(client.fetchRate("USD", "EUR"))
-          .thenReturn(new RateResponseDTO("USD", "EUR", rateValue, "2026-02-15"));
+          .thenReturn(
+              ResponseEntity.ok(new RateResponseDTO("USD", "EUR", rateValue, "2026-02-15")));
 
       BigDecimal result = provider.getRate(from, to);
 
@@ -203,7 +205,7 @@ class SwopProviderTest {
       List<RateResponseDTO> rates =
           List.of(new RateResponseDTO("EUR", "USD", new BigDecimal("1.079301"), today.toString()));
 
-      when(client.fetchAllRates()).thenReturn(new AllRatesResponse(rates));
+      when(client.fetchAllRates()).thenReturn(ResponseEntity.ok(rates));
 
       provider.warmupCache();
 
@@ -224,7 +226,7 @@ class SwopProviderTest {
               new RateResponseDTO("EUR", "USD", new BigDecimal("1.079301"), today.toString()),
               new RateResponseDTO("EUR", "GBP", new BigDecimal("0.852341"), today.toString()));
 
-      when(client.fetchAllRates()).thenReturn(new AllRatesResponse(rates));
+      when(client.fetchAllRates()).thenReturn(ResponseEntity.ok(rates));
 
       provider.warmupCache();
 
