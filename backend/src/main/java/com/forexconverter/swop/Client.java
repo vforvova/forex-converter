@@ -11,9 +11,8 @@ import org.springframework.web.client.RestClient;
 public class Client {
 
   private final RestClient restClient;
-  private final Metrics metrics;
 
-  public Client(ClientProperties properties, Metrics metrics) {
+  public Client(ClientProperties properties) {
     SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
     requestFactory.setConnectTimeout(properties.timeout());
     requestFactory.setReadTimeout(properties.timeout());
@@ -24,35 +23,21 @@ public class Client {
             .defaultHeader("Authorization", "ApiKey " + properties.apiKey())
             .requestFactory(requestFactory)
             .build();
-
-    this.metrics = metrics;
   }
 
   public ResponseEntity<RateResponseDTO> fetchRate(String baseCurrency, String quoteCurrency) {
-    ResponseEntity<RateResponseDTO> response =
-        restClient
-            .get()
-            .uri("/rest/rates/{base}/{quote}", baseCurrency, quoteCurrency)
-            .retrieve()
-            .toEntity(RateResponseDTO.class);
-
-    int statusCode = response.getStatusCode().value();
-    metrics.recordCall("rate", statusCode);
-
-    return response;
+    return restClient
+        .get()
+        .uri("/rest/rates/{base}/{quote}", baseCurrency, quoteCurrency)
+        .retrieve()
+        .toEntity(RateResponseDTO.class);
   }
 
   public ResponseEntity<List<RateResponseDTO>> fetchAllRates() {
-    ResponseEntity<List<RateResponseDTO>> response =
-        restClient
-            .get()
-            .uri("/rest/rates")
-            .retrieve()
-            .toEntity(new ParameterizedTypeReference<List<RateResponseDTO>>() {});
-
-    int statusCode = response.getStatusCode().value();
-    metrics.recordCall("all_rates", statusCode);
-
-    return response;
+    return restClient
+        .get()
+        .uri("/rest/rates")
+        .retrieve()
+        .toEntity(new ParameterizedTypeReference<List<RateResponseDTO>>() {});
   }
 }

@@ -2,7 +2,6 @@ package com.forexconverter.swop;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -51,7 +50,7 @@ class ClientTest {
                 """)
             .addHeader("Content-Type", "application/json"));
 
-    Client client = new Client(properties, new Metrics(new SimpleMeterRegistry()));
+    Client client = new Client(properties);
     ResponseEntity<RateResponseDTO> response = client.fetchRate("EUR", "USD");
 
     assertThat(response.getBody().baseCurrency()).isEqualTo("EUR");
@@ -88,7 +87,7 @@ class ClientTest {
                 """)
             .addHeader("Content-Type", "application/json"));
 
-    Client client = new Client(properties, new Metrics(new SimpleMeterRegistry()));
+    Client client = new Client(properties);
     ResponseEntity<List<RateResponseDTO>> response = client.fetchAllRates();
 
     assertThat(response.getBody()).hasSize(2);
