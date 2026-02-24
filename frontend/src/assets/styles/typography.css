@@ -1,0 +1,98 @@
+:root {
+  --font-family-display:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue',
+    Arial, sans-serif;
+  --font-family-text:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-family-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+}
+
+body {
+  font-family: var(--font-family-text);
+  font-size: 17px; /* Apple Standard Body Size */
+  line-height: 1.47059;
+  font-weight: 400;
+  letter-spacing: -0.022em;
+}
+
+.font-large-title {
+  font-family: var(--font-family-display);
+  font-size: 34px;
+  line-height: 1.20588;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-bottom: 0.5em;
+}
+
+.font-title-1 {
+  font-family: var(--font-family-display);
+  font-size: 28px;
+  line-height: 1.21429;
+  font-weight: 600;
+  letter-spacing: 0.004em;
+  margin-bottom: 0.5em;
+}
+
+.font-title-2 {
+  font-family: var(--font-family-display);
+  font-size: 22px;
+  line-height: 1.27273;
+  font-weight: 600;
+  letter-spacing: 0.016em;
+  margin-bottom: 0.5em;
+}
+
+.font-headline {
+  font-family: var(--font-family-text);
+  font-size: 17px;
+  line-height: 1.29412;
+  font-weight: 600;
+  letter-spacing: -0.021em;
+}
+
+.font-callout {
+  font-family: var(--font-family-text);
+  font-size: 16px;
+  line-height: 1.3125;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.font-subhead {
+  font-family: var(--font-family-text);
+  font-size: 15px;
+  line-height: 1.33333;
+  font-weight: 400;
+  letter-spacing: -0.016em;
+}
+
+.font-footnote {
+  font-family: var(--font-family-text);
+  font-size: 13px;
+  line-height: 1.38462;
+  font-weight: 400;
+  letter-spacing: -0.008em;
+}
+
+.font-caption-1 {
+  font-family: var(--font-family-text);
+  font-size: 12px;
+  line-height: 1.33333;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-tertiary {
+  color: var(--text-tertiary);
+}

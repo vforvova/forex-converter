@@ -1,0 +1,43 @@
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f7;
+  --bg-tertiary: #e5e5ea;
+
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --text-tertiary: #d2d2d7;
+
+  --system-blue: #007aff;
+  --system-blue-hover: #0066cc;
+  --system-green: #34c759;
+  --system-red: #ff3b30;
+
+  --border-color: rgba(60, 60, 67, 0.18);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  --focus-ring: 0 0 0 4px rgba(0, 122, 255, 0.3);
+}
+
+html.dark {
+  --bg-primary: #000000;
+  --bg-secondary: #1c1c1e;
+  --bg-tertiary: #2c2c2e;
+
+  --text-primary: #f5f5f7;
+  --text-secondary: #86868b;
+  --text-tertiary: #48484a;
+
+  --system-blue: #0a84ff;
+  --system-blue-hover: #007aff;
+  --system-green: #32d74b;
+  --system-red: #ff453a;
+
+  --border-color: rgba(84, 84, 88, 0.65);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  --focus-ring: 0 0 0 4px rgba(10, 132, 255, 0.3);
+}
