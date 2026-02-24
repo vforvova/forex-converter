@@ -22,7 +22,7 @@ public class CacheConfig {
   public CacheManager cacheManager() {
     CaffeineCacheManager cacheManager = new CaffeineCacheManager(EXCHANGE_RATES_CACHE);
     cacheManager.setCaffeine(
-        Caffeine.newBuilder().expireAfterWrite(24, TimeUnit.HOURS).maximumSize(1000));
+        Caffeine.newBuilder().expireAfterWrite(24, TimeUnit.HOURS).maximumSize(1000).recordStats());
     return cacheManager;
   }
 }

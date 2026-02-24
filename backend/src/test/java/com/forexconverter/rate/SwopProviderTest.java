@@ -10,8 +10,6 @@ import static org.mockito.Mockito.when;
 
 import com.forexconverter.swop.Client;
 import com.forexconverter.swop.RateResponseDTO;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Currency;
@@ -47,8 +45,7 @@ class SwopProviderTest {
   @BeforeEach
   void setUp() {
     when(cacheManager.getCache("exchangeRates")).thenReturn(cache);
-    MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    provider = new SwopProvider(client, cacheManager, meterRegistry);
+    provider = new SwopProvider(client, cacheManager);
     today = LocalDate.now();
   }
 

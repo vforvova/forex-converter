@@ -2,8 +2,6 @@ package com.forexconverter.rate;
 
 import com.forexconverter.swop.Client;
 import com.forexconverter.swop.RateResponseDTO;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Currency;
@@ -26,24 +24,9 @@ public class SwopProvider implements Provider {
   private final Client client;
   private final Cache cache;
 
-  private final Counter cacheHitCounter;
-  private final Counter cacheMissCounter;
-
-  public SwopProvider(Client client, CacheManager cacheManager, MeterRegistry registry) {
+  public SwopProvider(Client client, CacheManager cacheManager) {
     this.client = client;
     this.cache = cacheManager.getCache(CacheConfig.EXCHANGE_RATES_CACHE);
-
-    this.cacheHitCounter =
-        Counter.builder("cache.gets")
-            .description("Number of cache get operations")
-            .tag("result", "hit")
-            .register(registry);
-
-    this.cacheMissCounter =
-        Counter.builder("cache.gets")
-            .description("Number of cache get operations")
-            .tag("result", "miss")
-            .register(registry);
   }
 
   @Override
@@ -52,10 +35,8 @@ public class SwopProvider implements Provider {
     BigDecimal cached = cache.get(todayKey, BigDecimal.class);
 
     if (cached != null) {
-      cacheHitCounter.increment();
       return cached;
     }
-    cacheMissCounter.increment();
 
     try {
       ResponseEntity<RateResponseDTO> response =
