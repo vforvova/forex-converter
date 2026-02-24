@@ -16,13 +16,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class CacheConfig {
 
-  public static final String EXCHANGE_RATES_CACHE = "exchangeRates";
+    public static final String EXCHANGE_RATES_CACHE = "exchangeRates";
 
-  @Bean
-  public CacheManager cacheManager() {
-    CaffeineCacheManager cacheManager = new CaffeineCacheManager(EXCHANGE_RATES_CACHE);
-    cacheManager.setCaffeine(
-        Caffeine.newBuilder().expireAfterWrite(24, TimeUnit.HOURS).maximumSize(1000).recordStats());
-    return cacheManager;
-  }
+    @Bean
+    public CacheManager cacheManager() {
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager(EXCHANGE_RATES_CACHE);
+        cacheManager.setCaffeine(
+                Caffeine.newBuilder().expireAfterWrite(24, TimeUnit.HOURS).maximumSize(35000).recordStats());
+        return cacheManager;
+    }
 }
