@@ -173,3 +173,9 @@ Overal test coverage of the project shouldn't be below 80%, coverage could be ch
 ```bash
 ./gradlew test jacocoTestReport
 ```
+
+## Observability
+
+Metrics are collected with Micrometer and InfluxDB, and demonstrated through Grafana.
+
+Dashboards are provisioned programmatically from `/backend/dashboards/`.
