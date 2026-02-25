@@ -111,12 +111,8 @@ All error responses share the same shape:
 GET /actuator/health
 ```
 
-Returns `200 OK` when the application is ready to serve requests. Used internally
-by the Docker health check to gate dependent services on backend readiness.
+Returns `200 OK` when the application is ready to serve requests. Used internally by the Docker health check to gate dependent services on backend readiness.
 
-> [!NOTE]
-> Health details are suppressed in the default profile (`show-details: never`).
-> Activate the `dev` profile locally to see full component health information.
 
 ## Business Logic & Caching
 
@@ -128,15 +124,8 @@ by the Docker health check to gate dependent services on backend readiness.
 
 ## Observability
 
-Metrics flow from the backend via [Micrometer](https://micrometer.io/) to InfluxDB. Grafana is pre-provisioned with a datasource and an application
-metrics dashboard.
+Metrics are observable via Grafana which is pre-provisioned with a datasource and an application metrics dashboard.
 
-> [!WARNING]
-> The observability stack is configured for **local development only**.
-> Credentials and tokens must be rotated before any real deployment.
+## Details
 
-## Local Development
-
-For development outside of Docker:
-- Backend: see [backend/README.md](backend/README.md)
-- Frontend: see [frontend/README.md](frontend/README.md)
+- Backend: for component and sequence details see [backend/README.md](backend/README.md)

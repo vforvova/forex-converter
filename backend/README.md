@@ -100,13 +100,6 @@ sequenceDiagram
     end
 ```
 
-### Input Validation
-
-- **Currency codes**: Validated against `java.util.Currency` (ISO 4217 standard)
-- **Amount**: Constrained via Jakarta Validation (`@DecimalMin`, `@DecimalMax`, `@Digits`)
-  - Range: `0.01` to `100,000,000,000`
-  - Maximum 2 decimal places
-
 ## Technology Choices
 
 ### RESTful API vs GraphQL
@@ -125,7 +118,7 @@ Caffeine provides built-in cache eviction policies (TTL, size limits) and metric
 - TTL: 24 hours - in the most extreme case there will be 2 sets of keys living simultaniously: for current and previous day
 - Maximum estimated keys: ~35,000 (combination of ~180 currencies × 2)
 
-**Warmup strategy**:
+**Warmup**:
 1. **On startup** — `ApplicationRunner` fetches all available rates asynchronously
 2. **Daily refresh** — `@Scheduled` cron job runs at 00:00:01 UTC
 
@@ -168,7 +161,7 @@ application API is covered with (functional) integration tests.
 ./gradlew test -P integration
 ```
 
-Overal test coverage of the project shouldn't be below 80%, coverage could be checked with:
+Overal test coverage of the project should be **above 80%**, coverage could be checked with:
 
 ```bash
 ./gradlew test jacocoTestReport
