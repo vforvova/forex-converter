@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import axios from 'axios'
 import { api } from './api'
+import httpClient from './httpClient'
+import { ConversionResponse } from '@/types/api'
 
 vi.mock('axios', () => ({
   default: { isAxiosError: vi.fn((e) => e?.isAxiosError === true) },
@@ -11,60 +11,67 @@ vi.mock('./httpClient', () => ({
   default: { get: vi.fn() }
 }))
 
-import httpClient from './httpClient'
-
 describe('api', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   describe('convert', () => {
-    it('returns result on successful response', async () => {
+    it('returns ok Result on successful response', async () => {
       vi.mocked(httpClient.get).mockResolvedValueOnce({
         data: { result: 85.42 }
       })
 
-      const response = await api.convert({
+      const response = (await api.convert({
         from: 'USD',
         to: 'EUR',
         amount: 100
-      })
+      })) as ConversionResponse
 
-      expect(response).toEqual({ result: 85.42 })
+      expect(response.isOk()).toBe(true)
+      expect(response.value).toEqual({ result: 85.42 })
     })
   })
 
   describe('handleError', () => {
-    it('returns message for non-Axios error', () => {
-      const response = api.handleError(new Error('Something went wrong'))
-      expect(response).toEqual({ error: 'Something went wrong' })
+    it('returns err Result for non-Axios error', () => {
+      const response = api.handleError(
+        new Error('Something went wrong')
+      ) as ConversionResponse
+
+      expect(response.isErr()).toBe(true)
+      expect(response.error.message).toBe('Something went wrong')
     })
 
-    it('returns network error message when no response', () => {
+    it('returns err Result for network error', () => {
       const error = new Error('Network error')
       error.isAxiosError = true
       error.response = null
       error.code = undefined
 
-      const response = api.handleError(error)
-      expect(response).toEqual({
-        error: 'Unable to connect to the server. Please check your internet connection.'
-      })
+      const response = api.handleError(error) as ConversionResponse
+
+      expect(response.isErr()).toBe(true)
+      expect(response.error.message).toBe(
+        'Unable to connect to the server. Please check your internet connection.'
+      )
     })
 
-    it('returns timeout message for ECONNABORTED', () => {
+    it('returns err Result for timeout', () => {
       const error = new Error('timeout')
       error.isAxiosError = true
       error.response = null
       error.code = 'ECONNABORTED'
 
-      const response = api.handleError(error)
-      expect(response).toEqual({
-        error: 'The conversion request timed out. Please try again.'
-      })
+      const response = api.handleError(error) as ConversionResponse
+
+      expect(response.isErr()).toBe(true)
+      expect(response.error.message).toBe(
+        'The conversion request timed out. Please try again.'
+      )
     })
 
-    it('extracts error from server response', () => {
+    it('returns err Result for server error', () => {
       const error = new Error('Server error')
       error.isAxiosError = true
       error.response = {
@@ -72,8 +79,10 @@ describe('api', () => {
         status: 429
       } as any
 
-      const response = api.handleError(error)
-      expect(response).toEqual({ error: 'Rate limit exceeded' })
+      const response = api.handleError(error) as ConversionResponse
+
+      expect(response.isErr()).toBe(true)
+      expect(response.error.message).toBe('Rate limit exceeded')
     })
   })
 })
