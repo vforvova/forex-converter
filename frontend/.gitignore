@@ -1,26 +1,5 @@
-# Logs
-logs
-*.log
-npm-debug.log*
+coverage/
+.nyc_output/
+.vite/
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Environment files
 .env
-
-# Test coverage
-coverage
-.nyc_output
