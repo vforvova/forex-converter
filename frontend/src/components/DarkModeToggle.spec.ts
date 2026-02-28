@@ -42,14 +42,14 @@ describe('DarkModeToggle.vue', () => {
 
   it('shows sun icon when in dark mode', async () => {
     mockIsDark.value = true
-    
+
     await nextTick()
-    
+
     const wrapper = mount(DarkModeToggle)
     await nextTick()
-    
+
     const svgs = wrapper.findAll('svg')
-    const sunIcon = svgs.find(svg => svg.classes('sun'))
-    expect(sunIcon.exists()).toBe(true)
+    const sunIcon = svgs.find((svg) => svg.classes('sun'))
+    expect(sunIcon?.exists()).toBe(true)
   })
 })
