@@ -5,11 +5,11 @@
       type="text"
       inputmode="decimal"
       placeholder="0.00"
+      class="amount-input"
+      :class="{ 'amount-input--error': !!error }"
       @keypress="handleKeyPress"
       @input="handleInput"
       @blur="handleBlur"
-      class="amount-input"
-      :class="{ 'amount-input--error': !!error }"
     />
     <div v-if="error" class="error-message">{{ error }}</div>
   </div>
