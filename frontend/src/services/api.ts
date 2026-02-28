@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ok, err } from 'neverthrow'
 import httpClient from './httpClient'
-import type { ConversionRequest, ConversionResponse } from '../types/api'
+import type { ConversionRequest, ConversionResponse } from '../types/conversion'
 
 export const api = {
   async convert({
