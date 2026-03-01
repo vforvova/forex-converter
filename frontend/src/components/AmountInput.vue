@@ -18,8 +18,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useDecimalFormatter } from '@/composables/useDecimalFormatter'
+import { useDecimalInputKeyGuard } from '@/composables/useDecimalInputKeyGuard'
 
 const formatDecimal = useDecimalFormatter()
+const { handleKeyPress } = useDecimalInputKeyGuard()
 
 interface Props {
   modelValue?: string
@@ -37,24 +39,16 @@ const emit = defineEmits<{
 
 const internalValue = ref(props.modelValue)
 
-watch(() => props.modelValue, (newValue) => {
-  internalValue.value = newValue || ''
-})
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    internalValue.value = newValue || ''
+  }
+)
 
 watch(internalValue, (newValue) => {
   emit('update:modelValue', newValue)
 })
-
-const handleKeyPress = (event: KeyboardEvent) => {
-  if ([8, 9, 27, 13, 46].includes(event.keyCode)) return
-  if (event.ctrlKey && [65, 67, 86, 88].includes(event.keyCode)) return
-  if ((event.keyCode >= 48 && event.keyCode <= 57) ||
-      (event.keyCode >= 96 && event.keyCode <= 105) ||
-      event.keyCode === 190 || event.keyCode === 110) {
-    return
-  }
-  event.preventDefault()
-}
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -64,11 +58,13 @@ const handleInput = (event: Event) => {
 }
 
 const handleBlur = () => {
-  if (internalValue.value) {
-    const numValue = parseFloat(internalValue.value)
-    if (!isNaN(numValue)) {
-      internalValue.value = formatDecimal(numValue)
-    }
+  if (!internalValue.value) {
+    return
+  }
+
+  const numValue = parseFloat(internalValue.value)
+  if (!isNaN(numValue)) {
+    internalValue.value = formatDecimal(numValue)
   }
 }
 </script>
