@@ -9,6 +9,7 @@
       :class="{ 'amount-input--error': !!error }"
       @keypress="handleKeyPress"
       @input="handleInput"
+      @focus="handleFocus"
       @blur="handleBlur"
     />
     <div v-if="error" class="error-message">{{ error }}</div>
@@ -54,6 +55,14 @@ const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
   const value = target.value
   const cleaned = value.replace(/[^\d.]/g, '').replace(/\.+/g, '.')
+  internalValue.value = cleaned
+}
+
+const handleFocus = () => {
+  if (!internalValue.value) {
+    return
+  }
+  const cleaned = internalValue.value.replace(/,/g, '')
   internalValue.value = cleaned
 }
 
