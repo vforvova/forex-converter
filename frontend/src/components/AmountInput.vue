@@ -66,13 +66,10 @@ const handleInput = (event: Event) => {
 }
 
 const handleFocus = () => {
-  if (!internalValue.value) {
+  if (!internalValue.value || !inputRef.value) {
     return
   }
-  const input = document.querySelector('.amount-input') as HTMLInputElement
-  if (input) {
-    input.value = internalValue.value.toString()
-  }
+  inputRef.value.value = internalValue.value.toString()
 }
 </script>
 
