@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import DarkModeToggle from './components/DarkModeToggle.vue'
 import AmountInput from './components/AmountInput.vue'
 import CurrencySelect from './components/CurrencySelect.vue'
@@ -9,7 +9,7 @@ import { api } from './services/api'
 
 const { locale } = useLocale()
 
-const amountText = ref('')
+const amount = ref<number>(0)
 const amountError = ref('')
 const fromCurrency = ref<string>()
 const toCurrency = ref<string>()
@@ -23,16 +23,8 @@ onMounted(() => {
   toCurrency.value = defaults.to
 })
 
-const apiAmount = computed(() => {
-  if (!amountText.value) return 0
-  const cleaned = amountText.value.replace(/[^\d.-]/g, '')
-  const parsed = parseFloat(cleaned)
-  if (isNaN(parsed)) return 0
-  return Number(parsed.toFixed(2))
-})
-
 async function handleConvert() {
-  if (!fromCurrency.value || !toCurrency.value || apiAmount.value <= 0) {
+  if (!fromCurrency.value || !toCurrency.value || amount.value <= 0) {
     conversionError.value = 'Please enter a valid amount'
     return
   }
@@ -44,7 +36,7 @@ async function handleConvert() {
   const response = await api.convert({
     from: fromCurrency.value,
     to: toCurrency.value,
-    amount: apiAmount.value
+    amount: amount.value
   })
 
   isLoading.value = false
@@ -70,7 +62,7 @@ async function handleConvert() {
         <div class="placeholder-card">
           <p class="font-headline">Amount to convert</p>
           <AmountInput 
-            v-model="amountText" 
+            v-model="amount" 
             :error="amountError"
           />
           <div class="currency-row">
@@ -88,7 +80,7 @@ async function handleConvert() {
           </button>
           <div v-if="conversionResult !== null" class="result-display">
             <p class="font-subhead">
-              {{ apiAmount }} {{ fromCurrency }} = 
+              {{ amount }} {{ fromCurrency }} = 
               <span class="result-value">{{ conversionResult.toFixed(2) }}</span> 
               {{ toCurrency }}
             </p>

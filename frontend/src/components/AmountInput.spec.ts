@@ -15,7 +15,7 @@ describe('AmountInput.vue', () => {
     const input = wrapper.find('input')
     
     await input.setValue('123.45')
-    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['123.45'])
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([123.45])
   })
 
   it('prevents non-numeric input', async () => {
@@ -32,20 +32,10 @@ describe('AmountInput.vue', () => {
     expect(preventDefault).toHaveBeenCalled()
   })
 
-  it('formats on blur with thousand separators', async () => {
-    const wrapper = mount(AmountInput)
-    const input = wrapper.find('input')
-    
-    await input.setValue('1234567.89')
-    await input.trigger('blur')
-    
-    expect(wrapper.emitted('update:modelValue')?.slice(-1)[0]).toEqual(['1,234,567.89'])
-  })
-
   it('shows validation error for invalid amount', async () => {
     const wrapper = mount(AmountInput, {
       props: {
-        modelValue: '0.009',
+        modelValue: 0.009,
         error: 'Amount must be at least 0.01'
       }
     })

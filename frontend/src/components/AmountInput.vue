@@ -1,7 +1,8 @@
 <template>
   <div class="amount-input-wrapper">
     <input
-      v-model="internalValue"
+      ref="inputRef"
+      :value="displayValue"
       type="text"
       inputmode="decimal"
       placeholder="0.00"
@@ -10,14 +11,13 @@
       @keypress="handleKeyPress"
       @input="handleInput"
       @focus="handleFocus"
-      @blur="handleBlur"
     />
     <div v-if="error" class="error-message">{{ error }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useDecimalFormatter } from '@/composables/useDecimalFormatter'
 import { useDecimalInputKeyGuard } from '@/composables/useDecimalInputKeyGuard'
 
@@ -25,25 +25,31 @@ const formatDecimal = useDecimalFormatter()
 const { handleKeyPress } = useDecimalInputKeyGuard()
 
 interface Props {
-  modelValue?: string
+  modelValue?: number
   error?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
+  modelValue: 0,
   error: ''
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
+  (e: 'update:modelValue', value: number): void
 }>()
 
 const internalValue = ref(props.modelValue)
+const inputRef = ref<HTMLInputElement>()
+
+const displayValue = computed(() => {
+  if (!internalValue.value) return ''
+  return formatDecimal(internalValue.value)
+})
 
 watch(
   () => props.modelValue,
   (newValue) => {
-    internalValue.value = newValue || ''
+    internalValue.value = newValue || 0
   }
 )
 
@@ -55,25 +61,17 @@ const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
   const value = target.value
   const cleaned = value.replace(/[^\d.]/g, '').replace(/\.+/g, '.')
-  internalValue.value = cleaned
+  const parsed = parseFloat(cleaned)
+  internalValue.value = isNaN(parsed) ? 0 : parsed
 }
 
 const handleFocus = () => {
   if (!internalValue.value) {
     return
   }
-  const cleaned = internalValue.value.replace(/,/g, '')
-  internalValue.value = cleaned
-}
-
-const handleBlur = () => {
-  if (!internalValue.value) {
-    return
-  }
-
-  const numValue = parseFloat(internalValue.value)
-  if (!isNaN(numValue)) {
-    internalValue.value = formatDecimal(numValue)
+  const input = document.querySelector('.amount-input') as HTMLInputElement
+  if (input) {
+    input.value = internalValue.value.toString()
   }
 }
 </script>
