@@ -5,6 +5,7 @@ import AmountInput from './components/AmountInput.vue'
 import CurrencySelect from './components/CurrencySelect.vue'
 import { useLocale } from './composables/useLocale'
 import { getDefaultCurrencies } from './utils/getDefaultCurrencies'
+import { api } from './services/api'
 
 const { locale } = useLocale()
 
@@ -12,6 +13,9 @@ const amountText = ref('')
 const amountError = ref('')
 const fromCurrency = ref<string>()
 const toCurrency = ref<string>()
+const isLoading = ref(false)
+const conversionResult = ref<number | null>(null)
+const conversionError = ref<string | null>(null)
 
 onMounted(() => {
   const defaults = getDefaultCurrencies(locale.value)
@@ -26,6 +30,31 @@ const apiAmount = computed(() => {
   if (isNaN(parsed)) return 0
   return Number(parsed.toFixed(2))
 })
+
+async function handleConvert() {
+  if (!fromCurrency.value || !toCurrency.value || apiAmount.value <= 0) {
+    conversionError.value = 'Please enter a valid amount'
+    return
+  }
+
+  isLoading.value = true
+  conversionError.value = null
+  conversionResult.value = null
+
+  const response = await api.convert({
+    from: fromCurrency.value,
+    to: toCurrency.value,
+    amount: apiAmount.value
+  })
+
+  isLoading.value = false
+
+  if (response.isOk()) {
+    conversionResult.value = response.value.result
+  } else {
+    conversionError.value = response.error.message
+  }
+}
 </script>
 
 <template>
@@ -49,8 +78,23 @@ const apiAmount = computed(() => {
             <span class="currency-arrow">→</span>
             <CurrencySelect v-model="toCurrency" />
           </div>
-          <p class="font-subhead text-secondary mt-4">
-            Parsed for API: {{ apiAmount }} {{ fromCurrency }} → {{ toCurrency }}
+          <button 
+            class="convert-button" 
+            :disabled="isLoading"
+            @click="handleConvert"
+          >
+            <span v-if="isLoading" class="loading-spinner"></span>
+            <span v-else>Convert</span>
+          </button>
+          <div v-if="conversionResult !== null" class="result-display">
+            <p class="font-subhead">
+              {{ apiAmount }} {{ fromCurrency }} = 
+              <span class="result-value">{{ conversionResult.toFixed(2) }}</span> 
+              {{ toCurrency }}
+            </p>
+          </div>
+          <p v-if="conversionError" class="error-message">
+            {{ conversionError }}
           </p>
         </div>
       </div>
@@ -124,5 +168,66 @@ const apiAmount = computed(() => {
 
 .mt-4 {
   margin-top: 1rem;
+}
+
+.convert-button {
+  margin-top: 1.5rem;
+  padding: 0.75rem 2rem;
+  background-color: var(--system-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  min-width: 140px;
+}
+
+.convert-button:hover:not(:disabled) {
+  background-color: var(--system-blue-hover);
+}
+
+.convert-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.convert-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.result-display {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.result-value {
+  font-weight: 700;
+  color: var(--system-green);
+}
+
+.error-message {
+  margin-top: 1rem;
+  color: var(--system-red);
+  font-size: 0.875rem;
 }
 </style>
