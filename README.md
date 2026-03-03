@@ -3,12 +3,12 @@
 A REST API and web UI for currency conversion. Converts monetary values between
 currencies using live exchange rates from [swop.cx](https://swop.cx).
 
-| Component | Technology              | Port |
-|-----------|-------------------------|------|
-| Backend   | Java 21, Spring Boot    | 8080 |
-| Frontend  | Vue 3, TypeScript, Vite | 5173 |
-| InfluxDB  | Time-series metrics     | 8086 |
-| Grafana   | Monitoring dashboards   | 3000 |
+| Component | Technology              |
+|-----------|-------------------------|
+| Backend   | Java 21, Spring Boot    |
+| Frontend  | Vue 3, TypeScript, Vite |
+| InfluxDB  | Time-series metrics     |
+| Grafana   | Monitoring dashboards   |
 
 ## Quick Start
 
@@ -39,13 +39,10 @@ The following services will be available:
 
 | Service     | URL                   |
 |-------------|-----------------------|
+| UI Static   | http://localhost:5173 |
 | Backend API | http://localhost:8080 |
 | Grafana     | http://localhost:3000 |
 | InfluxDB    | http://localhost:8086 |
-
-> [!NOTE]
-> The frontend is not part of the Docker Compose stack. See
-> [frontend/README.md](frontend/README.md) to run it locally.
 
 > [!WARNING]
 > InfluxDB and Grafana are pre-configured with default dev credentials
@@ -113,6 +110,9 @@ GET /actuator/health
 
 Returns `200 OK` when the application is ready to serve requests. Used internally by the Docker health check to gate dependent services on backend readiness.
 
+## Frontend
+
+UI doesn't require any tooling unless you'd like to make changes or run tests. To ensure holistic availability through Docker Compose [Caddy server](https://github.com/caddyserver/caddy) was used to serve static UI files.
 
 ## Business Logic & Caching
 
@@ -128,4 +128,5 @@ Metrics are observable via Grafana which is pre-provisioned with a datasource an
 
 ## Details
 
+- Frontend: for UI details see [frontend/README.md](frontend/README.md)
 - Backend: for component and sequence details see [backend/README.md](backend/README.md)
