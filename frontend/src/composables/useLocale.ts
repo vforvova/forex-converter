@@ -1,11 +1,14 @@
-import { ref, Ref } from 'vue'
+import { ref, computed, Ref } from 'vue'
 
-type Locale = {
+export function useLocale(): {
   locale: Ref<string>
-}
-
-export function useLocale(): Locale {
+  language: Ref<string>
+  country: Ref<string>
+} {
   const locale = ref(navigator?.language || 'en-US')
 
-  return { locale }
+  const language = computed(() => locale.value.split('-')[0])
+  const country = computed(() => locale.value.split('-')[1])
+
+  return { locale, language, country }
 }
