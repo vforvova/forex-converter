@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { useDecimalInputKeyGuard } from './useDecimalInputKeyGuard'
 
 describe('useDecimalInputKeyGuard', () => {

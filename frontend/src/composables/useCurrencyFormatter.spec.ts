@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { useCurrencyFormatter } from './useCurrencyFormatter'
 
 describe('useCurrencyFormatter', () => {
@@ -10,7 +9,7 @@ describe('useCurrencyFormatter', () => {
   })
 
   describe.each`
-    value     | currency | expected
+    value      | currency | expected
     ${1234.56} | ${'USD'} | ${'$1,234.56'}
     ${1234.56} | ${'EUR'} | ${'€1,234.56'}
     ${1234.56} | ${'GBP'} | ${'£1,234.56'}
