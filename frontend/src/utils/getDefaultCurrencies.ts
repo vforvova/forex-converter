@@ -29,7 +29,7 @@ const LOCALE_CURRENCY_MAP: Record<string, { from: string; to: string }> = {
   NZ: { from: 'NZD', to: 'USD' }
 }
 
-export function getDefaultCurrencies(locale: string): { from: string; to: string } {
-  const countryCode = locale.split('-')[1] || locale.split('_')[1]
+export function getDefaultCurrencies(languageTag: string): { from: string; to: string } {
+  const countryCode = languageTag.split('-')[1]
   return LOCALE_CURRENCY_MAP[countryCode] || { from: 'USD', to: 'EUR' }
 }
