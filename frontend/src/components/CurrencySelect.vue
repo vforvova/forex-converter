@@ -17,19 +17,35 @@ const selectRef = ref<HTMLElement>()
 const highlightedIndex = ref(0)
 const inputRef = ref<HTMLInputElement>()
 const listRef = ref<HTMLElement>()
+const originalValue = ref('')
 
 const filteredCurrencies = computed(() => {
-  const query = searchQuery.value.toLowerCase()
-  if (!query) return CURRENCIES.slice(0, 20)
-  
-  return CURRENCIES.filter(code => {
-    const display = getCurrencyDisplay(code).toLowerCase()
-    return code.toLowerCase().includes(query) || display.includes(query)
-  }).slice(0, 20)
+  return CURRENCIES
+})
+
+const autoSelectIndex = computed(() => {
+  const query = searchQuery.value.toUpperCase()
+  if (!query) return -1
+
+  const exact = CURRENCIES.findIndex((c) => c === query)
+  if (exact >= 0) return exact
+
+  const startsWith = CURRENCIES.findIndex((c) => c.startsWith(query))
+  if (startsWith >= 0) return startsWith
+
+  return -1
 })
 
 watch(searchQuery, () => {
-  highlightedIndex.value = 0
+  if (autoSelectIndex.value >= 0) {
+    highlightedIndex.value = autoSelectIndex.value
+  }
+})
+
+watch(autoSelectIndex, (newIndex) => {
+  if (newIndex >= 0) {
+    highlightedIndex.value = newIndex
+  }
 })
 
 watch(highlightedIndex, () => {
@@ -41,7 +57,7 @@ const displayValue = computed(() => {
   return props.modelValue || ''
 })
 
-const arrow = computed(() => isOpen.value ? ' ▲' : ' ▼')
+const arrow = computed(() => (isOpen.value ? ' ▲' : ' ▼'))
 
 function selectCurrency(code: string) {
   emit('update:modelValue', code)
@@ -57,7 +73,9 @@ function closeDropdown() {
 async function toggleDropdown() {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
-    highlightedIndex.value = 0
+    originalValue.value = props.modelValue || ''
+    const currentIndex = CURRENCIES.findIndex((c) => c === props.modelValue)
+    highlightedIndex.value = currentIndex >= 0 ? currentIndex : 0
     searchQuery.value = props.modelValue || ''
     await nextTick()
     inputRef.value?.focus()
@@ -67,13 +85,16 @@ async function toggleDropdown() {
 
 function handleKeydown(event: KeyboardEvent) {
   if (!isOpen.value) return
-  
+
   const isCtrlOrMeta = event.ctrlKey || event.metaKey
-  
+
   switch (event.key) {
     case 'ArrowDown':
       event.preventDefault()
-      highlightedIndex.value = Math.min(highlightedIndex.value + 1, filteredCurrencies.value.length - 1)
+      highlightedIndex.value = Math.min(
+        highlightedIndex.value + 1,
+        filteredCurrencies.value.length - 1
+      )
       break
     case 'ArrowUp':
       event.preventDefault()
@@ -82,7 +103,10 @@ function handleKeydown(event: KeyboardEvent) {
     case 'n':
       if (isCtrlOrMeta) {
         event.preventDefault()
-        highlightedIndex.value = Math.min(highlightedIndex.value + 1, filteredCurrencies.value.length - 1)
+        highlightedIndex.value = Math.min(
+          highlightedIndex.value + 1,
+          filteredCurrencies.value.length - 1
+        )
       }
       break
     case 'p':
@@ -97,8 +121,12 @@ function handleKeydown(event: KeyboardEvent) {
         selectCurrency(filteredCurrencies.value[highlightedIndex.value])
       }
       break
+    case 'Tab':
+      closeDropdown()
+      break
     case 'Escape':
       event.preventDefault()
+      emit('update:modelValue', originalValue.value)
       closeDropdown()
       break
   }
@@ -121,7 +149,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="selectRef" class="currency-select">
-    <div 
+    <div
       v-if="!isOpen"
       class="currency-select__display"
       :class="{ 'currency-select__display--open': isOpen }"
@@ -133,8 +161,8 @@ onUnmounted(() => {
       <span>{{ displayValue }}</span>
       <span class="currency-select__arrow">{{ arrow }}</span>
     </div>
-    
-    <input 
+
+    <input
       v-else
       ref="inputRef"
       v-model="searchQuery"
@@ -142,14 +170,14 @@ onUnmounted(() => {
       placeholder="Search currency..."
       @keydown="handleKeydown"
     />
-    
+
     <div v-if="isOpen" class="currency-select__dropdown">
       <ul ref="listRef" class="currency-select__list">
         <li
           v-for="(code, index) in filteredCurrencies"
           :key="code"
           class="currency-select__item"
-          :class="{ 
+          :class="{
             'currency-select__item--selected': code === modelValue,
             'currency-select__item--highlighted': index === highlightedIndex
           }"
@@ -179,7 +207,9 @@ onUnmounted(() => {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   min-height: 46px;
 }
 

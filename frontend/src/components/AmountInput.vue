@@ -1,23 +1,23 @@
 <template>
   <div class="amount-input-wrapper">
     <input
-      ref="inputRef"
       :value="displayValue"
       type="text"
       inputmode="decimal"
-      placeholder="0.00"
       class="amount-input"
       :class="{ 'amount-input--error': !!error }"
+      placeholder="1.00"
       @keypress="handleKeyPress"
       @input="handleInput"
       @focus="handleFocus"
+      @blur="handleBlur"
     />
     <div v-if="error" class="error-message">{{ error }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useDecimalFormatter } from '@/composables/useDecimalFormatter'
 import { useDecimalInputKeyGuard } from '@/composables/useDecimalInputKeyGuard'
 
@@ -30,7 +30,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: 0,
+  modelValue: 1.0,
   error: ''
 })
 
@@ -38,38 +38,28 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: number): void
 }>()
 
-const internalValue = ref(props.modelValue)
-const inputRef = ref<HTMLInputElement>()
+const isFocused = ref(false)
 
 const displayValue = computed(() => {
-  if (!internalValue.value) return ''
-  return formatDecimal(internalValue.value)
-})
-
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    internalValue.value = newValue || 0
-  }
-)
-
-watch(internalValue, (newValue) => {
-  emit('update:modelValue', newValue)
+  return isFocused.value
+    ? String(props.modelValue) || ''
+    : formatDecimal(props.modelValue)
 })
 
 const handleInput = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const value = target.value
-  const cleaned = value.replace(/[^\d.]/g, '').replace(/\.+/g, '.')
-  const parsed = parseFloat(cleaned)
-  internalValue.value = isNaN(parsed) ? 0 : parsed
+  const { value } = event.target as HTMLInputElement
+  // if (value === '') return // explicitely needed to not set input to default state when user deleted previous value
+  const sanitized = value.replace(/[^\d.]/g, '').replace(/\.+/g, '.')
+  const parsed = parseFloat(sanitized)
+  emit('update:modelValue', isNaN(parsed) ? 1.0 : parsed)
 }
 
 const handleFocus = () => {
-  if (!internalValue.value || !inputRef.value) {
-    return
-  }
-  inputRef.value.value = internalValue.value.toString()
+  isFocused.value = true
+}
+
+const handleBlur = () => {
+  isFocused.value = false
 }
 </script>
 
