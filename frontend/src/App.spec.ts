@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { nextTick, ref } from 'vue'
 import App from './App.vue'
+import CurrencySelect from './components/CurrencySelect.vue'
 import { api } from './services/api'
 import { ok, err } from 'neverthrow'
 
@@ -18,6 +19,23 @@ vi.mock('./services/api', () => ({
     convert: vi.fn()
   }
 }))
+
+vi.mock('./composables/useCurrencyPair', () => {
+  const fromCurrency = ref('USD')
+  const toCurrency = ref('EUR')
+  const swapCurrencies = () => {
+    const temp = fromCurrency.value
+    fromCurrency.value = toCurrency.value
+    toCurrency.value = temp
+  }
+  return {
+    useCurrencyPair: () => ({
+      fromCurrency,
+      toCurrency,
+      swapCurrencies
+    })
+  }
+})
 
 describe('App.vue', () => {
   beforeEach(() => {
@@ -86,5 +104,20 @@ describe('App.vue', () => {
     await nextTick()
 
     expect(wrapper.text()).toContain('Rate limit exceeded')
+  })
+
+  it('swaps currencies when swap button is clicked', async () => {
+    const wrapper = mount(App)
+
+    const fromSelect = wrapper.findAllComponents(CurrencySelect)[0]
+    const toSelect = wrapper.findAllComponents(CurrencySelect)[1]
+
+    const swapButton = wrapper.find('button.currency-arrow')
+    expect(swapButton.exists()).toBe(true)
+
+    await swapButton.trigger('click')
+
+    expect(fromSelect.props('modelValue')).toBe('EUR')
+    expect(toSelect.props('modelValue')).toBe('USD')
   })
 })

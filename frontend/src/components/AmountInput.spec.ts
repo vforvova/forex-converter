@@ -1,4 +1,3 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AmountInput from './AmountInput.vue'
 
@@ -13,7 +12,7 @@ describe('AmountInput.vue', () => {
   it('emits update:modelValue on input change', async () => {
     const wrapper = mount(AmountInput)
     const input = wrapper.find('input')
-    
+
     await input.setValue('123.45')
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([123.45])
   })
@@ -21,14 +20,14 @@ describe('AmountInput.vue', () => {
   it('prevents non-numeric input', async () => {
     const wrapper = mount(AmountInput)
     const input = wrapper.find('input')
-    
+
     const preventDefault = vi.fn()
-    
+
     await input.trigger('keypress', {
       key: 'a',
       preventDefault
     })
-    
+
     expect(preventDefault).toHaveBeenCalled()
   })
 
@@ -39,8 +38,10 @@ describe('AmountInput.vue', () => {
         error: 'Amount must be at least 0.01'
       }
     })
-    
-    expect(wrapper.find('.error-message').text()).toBe('Amount must be at least 0.01')
+
+    expect(wrapper.find('.error-message').text()).toBe(
+      'Amount must be at least 0.01'
+    )
     expect(wrapper.find('.amount-input--error').exists()).toBe(true)
   })
 })
