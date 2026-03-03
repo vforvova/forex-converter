@@ -70,5 +70,3 @@ Run `npm run check` before pushing to ensure the branch is clean.
 - **neverthrow** is used for error handling — API call results are typed as `Result<T, E>`, avoiding uncaught promise rejections.
 - **`@` alias** resolves to `./src` for clean, absolute-style imports throughout the project.
 - Production-like setup is served as a **pre-built static bundle via Caddy** inside Docker — no Node.js runtime required.
-```
-
