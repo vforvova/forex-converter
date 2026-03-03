@@ -1,6 +1,6 @@
-import { useCurrencyFormatter } from './useCurrencyFormatter'
+import { useMoneyFormatter } from './useMoneyFormatter'
 
-describe('useCurrencyFormatter', () => {
+describe('useMoneyFormatter', () => {
   beforeEach(() => {
     Object.defineProperty(window, 'navigator', {
       value: { language: 'en-US' },
@@ -16,8 +16,8 @@ describe('useCurrencyFormatter', () => {
     ${1234.56} | ${'JPY'} | ${'¥1,235'}
   `('$currency -> $expected', ({ value, currency, expected }) => {
     it('formats correctly', () => {
-      const formatCurrency = useCurrencyFormatter()
-      expect(formatCurrency(value, currency)).toBe(expected)
+      const formatMoney = useMoneyFormatter()
+      expect(formatMoney(value, currency)).toBe(expected)
     })
   })
 })

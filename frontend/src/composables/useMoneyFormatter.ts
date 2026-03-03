@@ -1,7 +1,7 @@
 import { useLocale } from './useLocale'
 import type { Currency } from '@/types/currency'
 
-export function useCurrencyFormatter() {
+export function useMoneyFormatter() {
   const { locale } = useLocale()
 
   return (value: number, currency: Currency) => {

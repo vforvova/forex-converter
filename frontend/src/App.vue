@@ -4,9 +4,11 @@ import DarkModeToggle from './components/DarkModeToggle.vue'
 import AmountInput from './components/AmountInput.vue'
 import CurrencySelect from './components/CurrencySelect.vue'
 import { useCurrencyPair } from './composables/useCurrencyPair'
+import { useMoneyFormatter } from './composables/useMoneyFormatter'
 import { api } from './services/api'
 
 const { fromCurrency, toCurrency, swapCurrencies } = useCurrencyPair()
+const formatMoney = useMoneyFormatter()
 
 const amount = ref<number>(1)
 const amountError = ref('')
@@ -52,7 +54,7 @@ async function handleConvert() {
 
         <div class="placeholder-card">
           <p class="font-headline">Amount to convert</p>
-          <AmountInput v-model="amount" :error="amountError" />
+          <AmountInput v-model="amount" :error="amountError" :currency="fromCurrency" />
           <div class="currency-row">
             <CurrencySelect v-model="fromCurrency" />
             <button
@@ -77,11 +79,10 @@ async function handleConvert() {
           </button>
           <div v-if="conversionResult !== null" class="result-display">
             <p class="font-subhead">
-              {{ amount }} {{ fromCurrency }} =
+              {{ formatMoney(amount, fromCurrency || 'USD') }} =
               <span class="result-value">{{
-                conversionResult.toFixed(2)
+                formatMoney(conversionResult, toCurrency || 'USD')
               }}</span>
-              {{ toCurrency }}
             </p>
           </div>
           <p v-if="conversionError" class="error-message">
