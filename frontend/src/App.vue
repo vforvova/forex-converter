@@ -9,7 +9,7 @@ import { api } from './services/api'
 
 const { locale } = useLocale()
 
-const amount = ref<number>(0)
+const amount = ref<number>(1)
 const amountError = ref('')
 const fromCurrency = ref<string>()
 const toCurrency = ref<string>()
@@ -61,17 +61,15 @@ async function handleConvert() {
 
         <div class="placeholder-card">
           <p class="font-headline">Amount to convert</p>
-          <AmountInput 
-            v-model="amount" 
-            :error="amountError"
-          />
+          <AmountInput v-model="amount" :error="amountError" />
           <div class="currency-row">
             <CurrencySelect v-model="fromCurrency" />
             <span class="currency-arrow">→</span>
             <CurrencySelect v-model="toCurrency" />
           </div>
-          <button 
-            class="convert-button" 
+          <button
+            class="convert-button"
+            tabindex="0"
             :disabled="isLoading"
             @click="handleConvert"
           >
@@ -80,8 +78,10 @@ async function handleConvert() {
           </button>
           <div v-if="conversionResult !== null" class="result-display">
             <p class="font-subhead">
-              {{ amount }} {{ fromCurrency }} = 
-              <span class="result-value">{{ conversionResult.toFixed(2) }}</span> 
+              {{ amount }} {{ fromCurrency }} =
+              <span class="result-value">{{
+                conversionResult.toFixed(2)
+              }}</span>
               {{ toCurrency }}
             </p>
           </div>
@@ -158,21 +158,19 @@ async function handleConvert() {
   color: var(--text-secondary);
 }
 
-.mt-4 {
-  margin-top: 1rem;
-}
-
 .convert-button {
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
   background-color: var(--system-blue);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 20px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
   min-width: 140px;
 }
 
