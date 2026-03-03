@@ -1,27 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import DarkModeToggle from './components/DarkModeToggle.vue'
 import AmountInput from './components/AmountInput.vue'
 import CurrencySelect from './components/CurrencySelect.vue'
-import { useLocale } from './composables/useLocale'
-import { getDefaultCurrencies } from './utils/getDefaultCurrencies'
+import { useCurrencyPair } from './composables/useCurrencyPair'
 import { api } from './services/api'
 
-const { locale } = useLocale()
+const { fromCurrency, toCurrency, swapCurrencies } = useCurrencyPair()
 
 const amount = ref<number>(1)
 const amountError = ref('')
-const fromCurrency = ref<string>()
-const toCurrency = ref<string>()
 const isLoading = ref(false)
 const conversionResult = ref<number | null>(null)
 const conversionError = ref<string | null>(null)
-
-onMounted(() => {
-  const defaults = getDefaultCurrencies(locale.value)
-  fromCurrency.value = defaults.from
-  toCurrency.value = defaults.to
-})
 
 async function handleConvert() {
   if (!fromCurrency.value || !toCurrency.value || amount.value <= 0) {
@@ -64,7 +55,15 @@ async function handleConvert() {
           <AmountInput v-model="amount" :error="amountError" />
           <div class="currency-row">
             <CurrencySelect v-model="fromCurrency" />
-            <span class="currency-arrow">→</span>
+            <button
+              class="currency-arrow"
+              tabindex="0"
+              aria-label="Swap currencies"
+              @click="swapCurrencies"
+            >
+              <span class="arrow-left">←</span>
+              <span class="arrow-right">→</span>
+            </button>
             <CurrencySelect v-model="toCurrency" />
           </div>
           <button
@@ -154,8 +153,64 @@ async function handleConvert() {
 }
 
 .currency-arrow {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  padding: 0;
   font-size: 1.25rem;
   color: var(--text-secondary);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition-theme);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.currency-arrow .arrow-left,
+.currency-arrow .arrow-right {
+  display: block;
+  font-size: 0.9em;
+}
+
+.currency-arrow .arrow-left {
+  opacity: 0;
+  margin-bottom: -1.1em;
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+.currency-arrow .arrow-right {
+  transition: transform 0.2s ease;
+}
+
+.currency-arrow:hover,
+.currency-arrow:focus {
+  color: var(--system-blue);
+}
+
+.currency-arrow:hover .arrow-left,
+.currency-arrow:focus .arrow-left {
+  opacity: 1;
+  margin-bottom: 0;
+  transform: translateY(2px);
+}
+
+.currency-arrow:hover .arrow-right,
+.currency-arrow:focus .arrow-right {
+  transform: translateY(-2px);
+}
+
+.currency-arrow:focus {
+  outline: none;
+  border-color: var(--system-blue);
+  color: var(--system-blue);
+  box-shadow: var(--focus-ring);
 }
 
 .convert-button {
