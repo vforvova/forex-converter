@@ -7,9 +7,9 @@ export function useCurrencyPair() {
   const toCurrency = ref<Currency>()
 
   const initialize = () => {
-    const defaults = getDefaultCurrencies(navigator.language)
-    fromCurrency.value = defaults.from
-    toCurrency.value = defaults.to
+    const { from, to } = getDefaultCurrencies(navigator.language)
+    fromCurrency.value = from
+    toCurrency.value = to
   }
 
   const swapCurrencies = () => {

@@ -18,19 +18,22 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useDecimalFormatter } from '@/composables/useDecimalFormatter'
+import { useMoneyFormatter } from '@/composables/useMoneyFormatter'
 import { useDecimalInputKeyGuard } from '@/composables/useDecimalInputKeyGuard'
+import type { Currency } from '@/types/currency'
 
-const formatDecimal = useDecimalFormatter()
+const formatMoney = useMoneyFormatter()
 const { handleKeyPress } = useDecimalInputKeyGuard()
 
 interface Props {
   modelValue?: number
+  currency?: Currency
   error?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: 1.0,
+  currency: undefined,
   error: ''
 })
 
@@ -41,9 +44,13 @@ const emit = defineEmits<{
 const isFocused = ref(false)
 
 const displayValue = computed(() => {
-  return isFocused.value
-    ? String(props.modelValue) || ''
-    : formatDecimal(props.modelValue)
+  if (isFocused.value) {
+    return String(props.modelValue) || ''
+  }
+  if (props.currency) {
+    return formatMoney(props.modelValue, props.currency)
+  }
+  return props.modelValue.toString()
 })
 
 const handleInput = (event: Event) => {
