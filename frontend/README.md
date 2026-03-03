@@ -19,7 +19,8 @@ Copy the example environment file:
 cp .env.example .env
 ```
 
-> **Tip:** If you remove the `VITE_API_URL` variable from your `.env` file entirely, the application will default to using the standard Vite proxy preset (which routes `/api/*` requests directly to `http://localhost:8080`).
+> [!TIP]
+> If you remove the `VITE_API_URL` variable from your `.env` file entirely, the application will default to using the standard Vite proxy preset (which routes `/api/*` requests directly to `http://localhost:8080`).
 
 ## Installation
 
@@ -56,7 +57,8 @@ Tests live alongside their source files using the `*.spec.ts` naming convention.
 | `npm run type-check` | TypeScript type checking without emitting |
 | `npm run check`      | Run lint + type-check + tests             |
 
-> **Note:** `eslint-config-prettier` is included to turn off conflicting ESLint style rules so Prettier remains the single source of truth for formatting.
+> [!NOTE]
+> `eslint-config-prettier` is included to turn off conflicting ESLint style rules so Prettier remains the single source of truth for formatting.
 
 Run `npm run check` before pushing to ensure the branch is clean.
 
